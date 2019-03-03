@@ -21,7 +21,7 @@ func (t *DataTable) Name() string {
 func (t *DataTable) Cols() []string {
 	var cols []string
 	for _, c := range t.cols {
-		cols = append(cols, c.Name)
+		cols = append(cols, c.Name())
 	}
 	return cols
 }
@@ -58,7 +58,7 @@ func (t *DataTable) Raw() [][]interface{} {
 
 	rows[0] = make([]interface{}, len(t.cols))
 	for i, col := range t.cols {
-		rows[0][i] = col.Name
+		rows[0][i] = col.Name()
 	}
 
 	for j := 1; j <= t.nrows; j++ {
@@ -96,7 +96,7 @@ func (t *DataTable) extend() bool {
 // Find the column index by col name
 func (t *DataTable) findColIndex(name string) int {
 	for i, c := range t.cols {
-		if c.Name == name {
+		if c.Name() == name {
 			return i
 		}
 	}

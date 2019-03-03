@@ -36,21 +36,6 @@ func TestNewTable(t *testing.T) {
 	)
 }
 
-func checkTable(t *testing.T, tb *DataTable, cells ...interface{}) {
-	ncols := len(tb.Cols())
-	nrows := tb.nrows + 1 // headers !
-	assert.Len(t, cells, ncols*nrows)
-
-	raw := tb.Raw()
-	assert.Len(t, raw, nrows)
-
-	for i, v := range cells {
-		r := i / ncols
-		c := i % ncols
-		assert.Equal(t, v, raw[r][c], "ROW #%d, COL #%d", r, c)
-	}
-}
-
 // t.AddColumn("sessions", Int64)
 // t.AddColumn("word", String)
 // t.AddColumn("bool", Bool)
