@@ -1,4 +1,4 @@
-package datatable
+package cast
 
 import (
 	"encoding/json"
@@ -105,8 +105,55 @@ func AsString(v interface{}) (string, bool) {
 	}
 }
 
-// AsNumber to convert as number (float64)
-func AsNumber(v interface{}) (float64, bool) {
+// AsInt to convert as a int
+func AsInt(v interface{}) (int64, bool) {
+	switch d := v.(type) {
+	case int:
+		return int64(d), true
+	case int8:
+		return int64(d), true
+	case int16:
+		return int64(d), true
+	case int32:
+		return int64(d), true
+	case int64:
+		return d, true
+	case float32:
+		return int64(d), true
+	case float64:
+		return int64(d), true
+	case uint:
+		return int64(d), true
+	case uint8:
+		return int64(d), true
+	case uint16:
+		return int64(d), true
+	case uint32:
+		return int64(d), true
+	case uint64:
+		return int64(d), true
+	case json.Number:
+		if f, err := d.Int64(); err == nil {
+			return f, true
+		}
+		return 0, false
+	case string:
+		if i, err := strconv.ParseInt(d, 10, 64); err == nil {
+			return i, true
+		}
+		return 0, false
+	case bool:
+		if d {
+			return 1, true
+		}
+		return 0, true
+	default:
+		return 0, false
+	}
+}
+
+// AsFloat to convert as a float64
+func AsFloat(v interface{}) (float64, bool) {
 	switch d := v.(type) {
 	case float64:
 		return d, true

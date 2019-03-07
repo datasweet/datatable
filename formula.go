@@ -1,34 +1,31 @@
 package datatable
 
 import (
-	"github.com/Knetic/govaluate"
-	"github.com/datasweet/datatable/formula"
+	"github.com/datasweet/datatable/expr"
 )
 
 func (t *DataTable) AddFormulaColumn(name string, ctyp ColumnType, formulae string) error {
-	expr, err := govaluate.NewEvaluableExpressionWithFunctions(formulae, formula.All)
+	parsed, err := expr.Parse(formulae)
 	if err != nil {
 		return err
 	}
 
-	calculated := make([]interface{}, t.nrows)
+	params := make(map[string]interface{}, len(t.cols)-1)
 
-	for r := 0; r < t.nrows; r++ {
-		params := make(map[string]interface{}, len(t.cols)-1)
-
-		for _, c := range t.cols {
-			if c.Name() == name {
-				continue
-			}
-			params[c.Name()] = c.GetAt(r)
+	for _, c := range t.cols {
+		if c.name == name {
+			continue
 		}
-
-		if res, err := expr.Evaluate(params); err == nil {
-			calculated[r] = res
-		}
+		params[c.name] = c.rows
 	}
 
-	t.AddColumn(name, ctyp, calculated...)
+	res, err := parsed.Eval(params)
+
+	if arr, ok := res.([]interface{}); ok {
+		t.AddColumn(name, ctyp, arr...)
+	} else {
+		t.AddColumn(name, ctyp, res)
+	}
 
 	return nil
 }

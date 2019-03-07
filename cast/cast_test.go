@@ -1,9 +1,10 @@
-package datatable
+package cast_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/datasweet/datatable/cast"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,23 +46,42 @@ func TestAsString(t *testing.T) {
 	testString(t, true, "true", true)
 }
 
-func TestAsNumber(t *testing.T) {
-	testNumber(t, "123", 123, true)
-	testNumber(t, "wrong", 0, false)
-	testNumber(t, true, 1, true)
-	testNumber(t, false, 0, true)
-	testNumber(t, 123, 123, true)
-	testNumber(t, int8(123), 123, true)
-	testNumber(t, int16(123), 123, true)
-	testNumber(t, int32(123), 123, true)
-	testNumber(t, int64(123), 123, true)
-	testNumber(t, uint(123), 123, true)
-	testNumber(t, uint8(123), 123, true)
-	testNumber(t, uint16(123), 123, true)
-	testNumber(t, uint32(123), 123, true)
-	testNumber(t, uint64(123), 123, true)
-	testNumber(t, float32(123), 123, true)
-	testNumber(t, float64(123), 123, true)
+func TestAsInt(t *testing.T) {
+	testInt(t, "123", 123, true)
+	testInt(t, "wrong", 0, false)
+	testInt(t, true, 1, true)
+	testInt(t, false, 0, true)
+	testInt(t, 123, 123, true)
+	testInt(t, int8(123), 123, true)
+	testInt(t, int16(123), 123, true)
+	testInt(t, int32(123), 123, true)
+	testInt(t, int64(123), 123, true)
+	testInt(t, uint(123), 123, true)
+	testInt(t, uint8(123), 123, true)
+	testInt(t, uint16(123), 123, true)
+	testInt(t, uint32(123), 123, true)
+	testInt(t, uint64(123), 123, true)
+	testInt(t, float32(123), 123, true)
+	testInt(t, float64(123), 123, true)
+}
+
+func TestAsFloat(t *testing.T) {
+	testFloat(t, "123", 123, true)
+	testFloat(t, "wrong", 0, false)
+	testFloat(t, true, 1, true)
+	testFloat(t, false, 0, true)
+	testFloat(t, 123, 123, true)
+	testFloat(t, int8(123), 123, true)
+	testFloat(t, int16(123), 123, true)
+	testFloat(t, int32(123), 123, true)
+	testFloat(t, int64(123), 123, true)
+	testFloat(t, uint(123), 123, true)
+	testFloat(t, uint8(123), 123, true)
+	testFloat(t, uint16(123), 123, true)
+	testFloat(t, uint32(123), 123, true)
+	testFloat(t, uint64(123), 123, true)
+	testFloat(t, float32(123), 123, true)
+	testFloat(t, float64(123), 123, true)
 }
 
 func TestAsDatetime(t *testing.T) {
@@ -75,25 +95,31 @@ func TestAsDatetime(t *testing.T) {
 }
 
 func testBool(t *testing.T, value interface{}, expected bool, ok bool) {
-	b, o := AsBool(value)
+	b, o := cast.AsBool(value)
 	assert.Equal(t, expected, b)
 	assert.Equal(t, ok, o)
 }
 
 func testString(t *testing.T, value interface{}, expected string, ok bool) {
-	b, o := AsString(value)
+	b, o := cast.AsString(value)
 	assert.Equal(t, expected, b)
 	assert.Equal(t, ok, o)
 }
 
-func testNumber(t *testing.T, value interface{}, expected float64, ok bool) {
-	b, o := AsNumber(value)
+func testInt(t *testing.T, value interface{}, expected int64, ok bool) {
+	b, o := cast.AsInt(value)
+	assert.Equal(t, expected, b)
+	assert.Equal(t, ok, o)
+}
+
+func testFloat(t *testing.T, value interface{}, expected float64, ok bool) {
+	b, o := cast.AsFloat(value)
 	assert.Equal(t, expected, b)
 	assert.Equal(t, ok, o)
 }
 
 func testDatetime(t *testing.T, value interface{}, expected time.Time, ok bool) {
-	b, o := AsDatetime(value)
+	b, o := cast.AsDatetime(value)
 	assert.Equal(t, expected, b)
 	assert.Equal(t, ok, o)
 }

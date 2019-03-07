@@ -1,5 +1,9 @@
 package datatable
 
+import (
+	"github.com/datasweet/datatable/cast"
+)
+
 // Column is a column in our datatable
 // A column contains all rows
 type Column struct {
@@ -87,7 +91,7 @@ func (c *Column) SetAt(at int, values ...interface{}) bool {
 	}
 
 	for i := 0; i < nrows; i++ {
-		c.rows[i+at] = c.cast(values[i])
+		c.rows[i+at] = c.asValue(values[i])
 	}
 	return true
 }
@@ -100,7 +104,7 @@ func (c *Column) Append(values ...interface{}) bool {
 	}
 
 	for _, v := range values {
-		c.rows = append(c.rows, c.cast(v))
+		c.rows = append(c.rows, c.asValue(v))
 	}
 	return true
 }
@@ -114,7 +118,7 @@ func (c *Column) InsertAt(at int, values ...interface{}) bool {
 
 	casted := make([]interface{}, nrows)
 	for i, v := range values {
-		casted[i] = c.cast(v)
+		casted[i] = c.asValue(v)
 	}
 
 	c.rows = append(c.rows[:at], append(casted, c.rows[at:]...)...)
@@ -148,24 +152,24 @@ func (c *Column) GetAt(at int) interface{} {
 	return c.rows[at]
 }
 
-// Cast the value to the Column type
+// asValue cast the value to the Column type
 // return nil if cast is wrong
-func (c *Column) cast(v interface{}) interface{} {
+func (c *Column) asValue(v interface{}) interface{} {
 	switch c.ctype {
 	case Bool:
-		if casted, ok := AsBool(v); ok {
+		if casted, ok := cast.AsBool(v); ok {
 			return casted
 		}
 	case Number:
-		if casted, ok := AsNumber(v); ok {
+		if casted, ok := cast.AsFloat(v); ok {
 			return casted
 		}
 	case String:
-		if casted, ok := AsString(v); ok {
+		if casted, ok := cast.AsString(v); ok {
 			return casted
 		}
 	case Datetime:
-		if casted, ok := AsDatetime(v); ok {
+		if casted, ok := cast.AsDatetime(v); ok {
 			return casted
 		}
 	}

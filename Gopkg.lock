@@ -10,6 +10,14 @@
   version = "v3.0.0"
 
 [[projects]]
+  digest = "1:94040b089515b5f3ad6711650dcef1ffa5048e126ed0a8dbc94dc99b153ddaae"
+  name = "github.com/antonmedv/expr"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "674ce6391cd8e7b52755f501c0fce30d3fc4e61b"
+  version = "v1.1.4"
+
+[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -38,6 +46,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Knetic/govaluate",
+    "github.com/antonmedv/expr",
     "github.com/stretchr/testify/assert",
   ]
   solver-name = "gps-cdcl"
