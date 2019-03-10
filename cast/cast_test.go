@@ -65,6 +65,16 @@ func TestAsInt(t *testing.T) {
 	testInt(t, float64(123), 123, true)
 }
 
+func TestAsIntArray(t *testing.T) {
+	arr, ok := cast.AsIntArray(1, 2, true)
+	assert.True(t, ok)
+	assert.Equal(t, []int64{1, 2, 1}, arr)
+
+	arr, ok = cast.AsIntArray(1, 2, true, "no")
+	assert.False(t, ok)
+	assert.Equal(t, []int64{1, 2, 1, 0}, arr)
+}
+
 func TestAsFloat(t *testing.T) {
 	testFloat(t, "123", 123, true)
 	testFloat(t, "wrong", 0, false)
@@ -82,6 +92,16 @@ func TestAsFloat(t *testing.T) {
 	testFloat(t, uint64(123), 123, true)
 	testFloat(t, float32(123), 123, true)
 	testFloat(t, float64(123), 123, true)
+}
+
+func TestAsFloatArray(t *testing.T) {
+	arr, ok := cast.AsFloatArray(1, 2, true)
+	assert.True(t, ok)
+	assert.Equal(t, []float64{1, 2, 1}, arr)
+
+	arr, ok = cast.AsFloatArray(1, 2, true, "no")
+	assert.False(t, ok)
+	assert.Equal(t, []float64{1, 2, 1, 0}, arr)
 }
 
 func TestAsDatetime(t *testing.T) {

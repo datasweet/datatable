@@ -2,28 +2,20 @@
 
 
 [[projects]]
-  digest = "1:5d3e23515e7916c152cc665eda0f7eaf6fdf8fdfe7c3dbac97049bcbd649b33f"
-  name = "github.com/Knetic/govaluate"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "d216395917cc49052c7c7094cf57f09657ca08a8"
-  version = "v3.0.0"
-
-[[projects]]
-  digest = "1:94040b089515b5f3ad6711650dcef1ffa5048e126ed0a8dbc94dc99b153ddaae"
-  name = "github.com/antonmedv/expr"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "674ce6391cd8e7b52755f501c0fce30d3fc4e61b"
-  version = "v1.1.4"
-
-[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = "UT"
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
+
+[[projects]]
+  digest = "1:3465cca9dac8f89b9966d86bf2646cab7703075fe32c185462f8bccc9017e6df"
+  name = "github.com/montanaflynn/stats"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "63fbb2597b7a13043b453a4b819945badb8f8926"
+  version = "v0.5.0"
 
 [[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
@@ -45,8 +37,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Knetic/govaluate",
-    "github.com/antonmedv/expr",
+    "github.com/montanaflynn/stats",
     "github.com/stretchr/testify/assert",
   ]
   solver-name = "gps-cdcl"

@@ -91,8 +91,8 @@ var parseTests = []parseTest{
 		arrayNode{[]Node{nameNode{"a"}, nameNode{"b"}, nameNode{"c"}}},
 	},
 	{
-		"len(foo)",
-		builtinNode{"len", []Node{nameNode{"foo"}}},
+		"length(\"foo\")",
+		builtinNode{"length", []Node{textNode{"foo"}}},
 	},
 	{
 		`foo matches "foo"`,
@@ -101,6 +101,10 @@ var parseTests = []parseTest{
 	{
 		`foo matches regex`,
 		matchesNode{left: nameNode{"foo"}, right: nameNode{"regex"}},
+	},
+	{
+		"UPPER(`foo`)",
+		builtinNode{"upper", []Node{nameNode{"foo"}}},
 	},
 }
 

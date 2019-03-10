@@ -24,7 +24,12 @@ func (t *DataTable) AddFormulaColumn(name string, ctyp ColumnType, formulae stri
 	if arr, ok := res.([]interface{}); ok {
 		t.AddColumn(name, ctyp, arr...)
 	} else {
-		t.AddColumn(name, ctyp, res)
+		// duplicate res on all row
+		ar := make([]interface{}, t.nrows)
+		for i := 0; i < t.nrows; i++ {
+			ar[i] = res
+		}
+		t.AddColumn(name, ctyp, ar...)
 	}
 
 	return nil

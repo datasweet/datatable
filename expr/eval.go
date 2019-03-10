@@ -3,7 +3,6 @@ package expr
 import (
 	"fmt"
 	"reflect"
-	"regexp"
 
 	"github.com/datasweet/datatable/cast"
 )
@@ -174,7 +173,7 @@ func (n matchesNode) Eval(env interface{}) (interface{}, error) {
 	}
 
 	if n.r != nil {
-		return n.r.MatchString(left.(string)), nil
+		return matches.Call(left, n.r), nil
 	}
 
 	right, err := n.right.Eval(env)
@@ -182,33 +181,193 @@ func (n matchesNode) Eval(env interface{}) (interface{}, error) {
 		return nil, err
 	}
 
-	matched, err := regexp.MatchString(right.(string), left.(string))
-	if err != nil {
-		return nil, err
-	}
-	return matched, nil
+	return matches.Call(left, right), nil
 }
 
 func (n builtinNode) Eval(env interface{}) (interface{}, error) {
-	switch n.name {
-	case "len":
-		if len(n.arguments) == 0 {
-			return nil, fmt.Errorf("missing argument: %v", n)
-		}
-		if len(n.arguments) > 1 {
-			return nil, fmt.Errorf("too many arguments: %v", n)
-		}
 
-		i, err := n.arguments[0].Eval(env)
+	args := make([]interface{}, 0)
+	for _, a := range n.arguments {
+		i, err := a.Eval(env)
 		if err != nil {
 			return nil, err
 		}
+		args = append(args, i)
+	}
 
-		switch reflect.TypeOf(i).Kind() {
-		case reflect.Array, reflect.Slice, reflect.String:
-			return float64(reflect.ValueOf(i).Len()), nil
+	switch n.name {
+	// AGG
+	case "avg":
+		return avg(args...), nil
+	case "count":
+		return count(args...), nil
+	case "count_distinct":
+		return countdistinct(args...), nil
+	case "cusum":
+		return cusum(args...), nil
+	case "max":
+		return max(args...), nil
+	case "median":
+		return median(args...), nil
+	case "min":
+		return min(args...), nil
+	case "percentile":
+		if len(n.arguments) < 2 {
+			return nil, fmt.Errorf("missing argument: %v", n)
 		}
-		return nil, fmt.Errorf("invalid argument %v (type %T)", n, i)
+		return percentile(args[0], args[1:]...), nil
+	case "stddev":
+		return stddev(args...), nil
+	case "sum":
+		return sum(args...), nil
+	case "variance":
+		return variance(args...), nil
+
+	// DATE
+	case "date_diff":
+		if len(n.arguments) != 2 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return dateDiff.Call(args[0], args[1]), nil
+	case "day":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return day.Call(args[0]), nil
+	case "hour":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return hour.Call(args[0]), nil
+	case "minute":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return minute.Call(args[0]), nil
+	case "month":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return month.Call(args[0]), nil
+	case "quarter":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return quarter.Call(args[0]), nil
+	case "second":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return second.Call(args[0]), nil
+	case "week":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return week.Call(args[0]), nil
+	case "weekday":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return weekday.Call(args[0]), nil
+	case "year":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return year.Call(args[0]), nil
+
+	// MATH
+	case "abs":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return abs.Call(args[0]), nil
+	case "acos":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return acos.Call(args[0]), nil
+	case "asin":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return asin.Call(args[0]), nil
+	case "atan":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return atan.Call(args[0]), nil
+	case "ceil":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return ceil.Call(args[0]), nil
+	case "cos":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return cos.Call(args[0]), nil
+	case "floor":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return floor.Call(args[0]), nil
+	case "log":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return log.Call(args[0]), nil
+	case "log10":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return log10.Call(args[0]), nil
+	case "pow":
+		if len(n.arguments) != 2 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return pow.Call(args[0], args[1]), nil
+	case "round":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return round.Call(args[0]), nil
+	case "sin":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return sin.Call(args[0]), nil
+	case "tan":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return tan.Call(args[0]), nil
+
+	// TEXT
+	case "concat":
+		if len(n.arguments) != 2 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return concat.Call(args[0], args[1]), nil
+	case "length":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return length.Call(args[0]), nil
+	case "lower":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return lower.Call(args[0]), nil
+	case "trim":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return trim.Call(args[0]), nil
+	case "upper":
+		if len(n.arguments) != 1 {
+			return nil, fmt.Errorf("wrong count of argument: %v", n)
+		}
+		return upper.Call(args[0]), nil
 	}
 
 	return nil, fmt.Errorf("unknown %q builtin", n.name)

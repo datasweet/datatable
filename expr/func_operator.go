@@ -1,80 +1,10 @@
 package expr
 
 import (
-	"math"
 	"reflect"
 
 	"github.com/datasweet/datatable/cast"
 )
-
-type unaryOperatorFunc func(x interface{}) interface{}
-
-func (fn unaryOperatorFunc) Call(a interface{}) interface{} {
-	if arr, ok := asArray(a); ok {
-		cnt := len(arr)
-		out := make([]interface{}, cnt)
-		for i := 0; i < cnt; i++ {
-			out[i] = fn(arr[i])
-		}
-		return out
-	}
-
-	return fn(a)
-}
-
-type binaryOperatorFunc func(x, y interface{}) interface{}
-
-func (fn binaryOperatorFunc) Call(a, b interface{}) interface{} {
-	arrA, okA := asArray(a)
-	arrB, okB := asArray(b)
-
-	if okA && okB {
-		lenA, lenB := len(arrA), len(arrB)
-		cnt := lenA
-		if lenB > lenA {
-			cnt = lenB
-		}
-		arrC := make([]interface{}, cnt)
-		for i := 0; i < cnt; i++ {
-			arrC[i] = fn(getAt(arrA, i), getAt(arrB, i))
-		}
-		return arrC
-	}
-
-	if okA {
-		cnt := len(arrA)
-		arrC := make([]interface{}, cnt)
-		for i := 0; i < cnt; i++ {
-			arrC[i] = fn(getAt(arrA, i), b)
-		}
-		return arrC
-	}
-
-	if okB {
-		cnt := len(arrB)
-		arrC := make([]interface{}, cnt)
-		for i := 0; i < cnt; i++ {
-			arrC[i] = fn(a, getAt(arrB, i))
-		}
-		return arrC
-	}
-
-	return fn(a, b)
-}
-
-func asArray(v interface{}) ([]interface{}, bool) {
-	if casted, ok := v.([]interface{}); ok {
-		return casted, true
-	}
-	return nil, false
-}
-
-func getAt(arr []interface{}, at int) interface{} {
-	if at < 0 || at >= len(arr) {
-		return nil
-	}
-	return arr[at]
-}
 
 // operator not
 // x is bool
@@ -131,17 +61,6 @@ var equals binaryOperatorFunc = func(x, y interface{}) interface{} {
 		return x == y
 	}
 	return reflect.DeepEqual(x, y)
-}
-
-// operator ~
-// x,y are string
-var concat binaryOperatorFunc = func(x, y interface{}) interface{} {
-	cx, okx := cast.AsString(x)
-	cy, oky := cast.AsString(y)
-	if !okx || !oky {
-		return nil
-	}
-	return cx + cy
 }
 
 // operator |
@@ -273,18 +192,5 @@ var remainder binaryOperatorFunc = func(x, y interface{}) interface{} {
 	if !okx || !oky {
 		return nil
 	}
-	return cx % cy
+	return float64(cx % cy)
 }
-
-// operator **
-// x, y are float
-var pow binaryOperatorFunc = func(x, y interface{}) interface{} {
-	cx, okx := cast.AsFloat(x)
-	cy, oky := cast.AsFloat(y)
-	if !okx || !oky {
-		return nil
-	}
-	return math.Pow(cx, cy)
-}
-
-// math

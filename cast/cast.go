@@ -2,6 +2,7 @@ package cast
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -101,7 +102,11 @@ func AsString(v interface{}) (string, bool) {
 	case bool:
 		return strconv.FormatBool(d), true
 	default:
-		return "", false
+		if v == nil {
+			return "", false
+		}
+
+		return fmt.Sprintf("%v", v), false
 	}
 }
 
@@ -152,6 +157,20 @@ func AsInt(v interface{}) (int64, bool) {
 	}
 }
 
+// AsIntArray to convert as an array of int64
+func AsIntArray(values ...interface{}) ([]int64, bool) {
+	arr := make([]int64, len(values))
+	b := true
+	for i, v := range values {
+		if cv, ok := AsInt(v); ok {
+			arr[i] = cv
+			continue
+		}
+		b = false
+	}
+	return arr, b
+}
+
 // AsFloat to convert as a float64
 func AsFloat(v interface{}) (float64, bool) {
 	switch d := v.(type) {
@@ -197,6 +216,20 @@ func AsFloat(v interface{}) (float64, bool) {
 	default:
 		return 0, false
 	}
+}
+
+// AsFloatArray to convert as an array of float64
+func AsFloatArray(values ...interface{}) ([]float64, bool) {
+	arr := make([]float64, len(values))
+	b := true
+	for i, v := range values {
+		if cv, ok := AsFloat(v); ok {
+			arr[i] = cv
+			continue
+		}
+		b = false
+	}
+	return arr, b
 }
 
 // AsDatetime to convert as datetime (time.Time)

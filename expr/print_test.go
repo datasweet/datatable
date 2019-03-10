@@ -13,12 +13,12 @@ type printTest struct {
 
 var printTests = []printTest{
 	{
-		functionNode{"sum", []Node{nameNode{"top 5 - speaker"}}},
+		builtinNode{"sum", []Node{nameNode{"top 5 - speaker"}}},
 		"sum(`top 5 - speaker`)",
 	},
 	{
-		builtinNode{"len", []Node{nameNode{"array"}}},
-		"len(array)",
+		builtinNode{"length", []Node{textNode{"foo"}}},
+		"length(\"foo\")",
 	},
 	{
 		functionNode{"call", []Node{arrayNode{[]Node{numberNode{1}, unaryNode{"not", boolNode{true}}}}}},

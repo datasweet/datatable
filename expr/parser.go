@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -54,7 +55,52 @@ var binaryOperators = map[string]info{
 }
 
 var builtins = map[string]bool{
-	"len": true,
+	// AGG
+	"avg":            true,
+	"count":          true,
+	"count_distinct": true,
+	"cusum":          true,
+	"max":            true,
+	"median":         true,
+	"min":            true,
+	"percentile":     true,
+	"stddev":         true,
+	"sum":            true,
+	"variance":       true,
+
+	// DATE
+	"date_diff": true,
+	"day":       true,
+	"hour":      true,
+	"minute":    true,
+	"month":     true,
+	"quarter":   true,
+	"second":    true,
+	"week":      true,
+	"weekday":   true,
+	"year":      true,
+
+	// MATH
+	"abs":   true,
+	"acos":  true,
+	"asin":  true,
+	"atan":  true,
+	"ceil":  true,
+	"cos":   true,
+	"floor": true,
+	"log":   true,
+	"log10": true,
+	"pow":   true,
+	"round": true,
+	"sin":   true,
+	"tan":   true,
+
+	// TEXT
+	"concat": true,
+	"length": true,
+	"lower":  true,
+	"trim":   true,
+	"upper":  true,
 }
 
 type parser struct {
@@ -315,8 +361,9 @@ func (p *parser) parseNameExpression(token token) (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		if _, ok := builtins[token.value]; ok {
-			node = builtinNode{name: token.value, arguments: arguments}
+		tv := strings.ToLower(token.value)
+		if _, ok := builtins[tv]; ok {
+			node = builtinNode{name: tv, arguments: arguments}
 		} else {
 			node = functionNode{name: token.value, arguments: arguments}
 		}
