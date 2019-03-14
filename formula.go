@@ -1,7 +1,7 @@
 package datatable
 
 import (
-	"github.com/datasweet/datatable/expr"
+	"github.com/datasweet/expr"
 )
 
 func (t *DataTable) AddFormulaColumn(name string, ctyp ColumnType, formulae string) error {

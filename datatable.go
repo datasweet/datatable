@@ -26,6 +26,11 @@ func (t *DataTable) Cols() []string {
 	return cols
 }
 
+// Len returns the number of rows in datatable
+func (t *DataTable) Len() int {
+	return t.nrows
+}
+
 // AddColumn adds a new column
 func (t *DataTable) AddColumn(name string, ctyp ColumnType, values ...interface{}) {
 	col := NewColumn(name, ctyp)
@@ -50,25 +55,6 @@ func (t *DataTable) AddRow(values ...interface{}) bool {
 	}
 	t.nrows++
 	return true
-}
-
-// Raw returns raw datas
-func (t *DataTable) Raw() [][]interface{} {
-	rows := make([][]interface{}, t.nrows+1) // headers + nrows
-
-	rows[0] = make([]interface{}, len(t.cols))
-	for i, col := range t.cols {
-		rows[0][i] = col.Name()
-	}
-
-	for j := 1; j <= t.nrows; j++ {
-		rows[j] = make([]interface{}, len(t.cols))
-		for i, col := range t.cols {
-			rows[j][i] = col.GetAt(j - 1)
-		}
-	}
-
-	return rows
 }
 
 // extends the rows of datatable if needed

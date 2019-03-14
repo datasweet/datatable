@@ -21,7 +21,7 @@ func checkTable(t *testing.T, tb *DataTable, cells ...interface{}) {
 	nrows := tb.nrows + 1 // headers !
 	assert.Len(t, cells, ncols*nrows)
 
-	raw := tb.Raw()
+	raw := tb.Table(true)
 	assert.Len(t, raw, nrows)
 
 	for i, v := range cells {

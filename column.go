@@ -1,7 +1,7 @@
 package datatable
 
 import (
-	"github.com/datasweet/datatable/cast"
+	"github.com/datasweet/cast"
 )
 
 // Column is a column in our datatable
