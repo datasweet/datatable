@@ -109,6 +109,7 @@ func (t *table) AddExprColumn(name string, formulae string) (DataColumn, error) 
 	if err != nil {
 		return nil, err
 	}
+  
 	col := newExprColumn(name, parsed)
 	t.cols = append(t.cols, col)
 	t.cindex[name] = len(t.cols) - 1
