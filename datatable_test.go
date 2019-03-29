@@ -27,31 +27,56 @@ func TestNewTable(t *testing.T) {
 
 	checkTable(t, tb,
 		"sessions", "bounces", "bounceRate", "pageViews",
-		nil, nil, nil, float64(1),
-		nil, nil, nil, float64(2),
-		nil, nil, nil, float64(3),
-		nil, nil, nil, float64(4),
-		nil, nil, nil, float64(5),
+		0.0, 0.0, 0.0, 1.0,
+		0.0, 0.0, 0.0, 2.0,
+		0.0, 0.0, 0.0, 3.0,
+		0.0, 0.0, 0.0, 4.0,
+		0.0, 0.0, 0.0, 5.0,
 	)
 }
 
-// t.AddColumn("sessions", Int64)
-// t.AddColumn("word", String)
-// t.AddColumn("bool", Bool)
+func TestNewRow(t *testing.T) {
+	tb := New("test")
+	tb.AddColumn("champ", String)
+	assert.Equal(t, 1, tb.NumCols())
 
-// t.AddRow(123, "abc", false)
-// t.AddRow(314, "pi", true)
+	buff := tb.NewRow().Set("champ", "Malzahar")
+	assert.Equal(t, 0, tb.NumRows())
+	assert.True(t, tb.AddRow(buff))
+	assert.Equal(t, 1, tb.NumRows())
 
-// t.AddColumn("bounces", Int64, 456, 789)
-// t.AddColumn("bounceRate", Float64)
+	assert.False(t, tb.AddRow(nil))
+	assert.True(t, tb.AddRow(tb.NewRow().Set("champ", "Xerath")))
+	assert.True(t, tb.AddRow(tb.NewRow().Set("satan", "Teemo"))) // wrong column => not set
+	assert.True(t, tb.AddRow(tb.NewRow().Set("champ", "Ahri")))
 
-// t.Columns[len(t.Columns)-1].Formula = "sessions * 100 / bounces"
+	checkTable(t, tb,
+		"champ",
+		"Malzahar",
+		"Xerath",
+		"",
+		"Ahri",
+	)
 
-// t.Print()
+	tb.AddColumn("win", Number)
+	checkTable(t, tb,
+		"champ", "win",
+		"Malzahar", 0.0,
+		"Xerath", 0.0,
+		"", 0.0,
+		"Ahri", 0.0,
+	)
 
-// t.Swap(0, 2)
-// t.Print()
-// }
+	tb.AddColumn("loose", Number, 3, 4, nil)
+	checkTable(t, tb,
+		"champ", "win", "loose",
+		"Malzahar", 0.0, 3.0,
+		"Xerath", 0.0, 4.0,
+		"", 0.0, nil,
+		"Ahri", 0.0, 0.0,
+	)
+
+}
 
 func TestExprColumn(t *testing.T) {
 	tb := New("test")

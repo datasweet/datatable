@@ -16,6 +16,7 @@ type DataColumn interface {
 	Len() int
 	Rows() []interface{}
 	GetAt(at int) interface{}
+	IsExpr() bool
 }
 
 // column is a column in our datatable
@@ -97,8 +98,14 @@ func (c *column) Rows() []interface{} {
 	return c.rows
 }
 
+// IsExpr to know if the column is an expression column,
+// ie a calculated column
+func (c *column) IsExpr() bool {
+	return c.expr != nil
+}
+
 // Size set the column size, ie the number of rows
-// Extend or shrink the rows
+// Extend (fill with zero values) or shrink the rows
 func (c *column) Size(size int) bool {
 	if size < 0 {
 		return false
@@ -107,7 +114,7 @@ func (c *column) Size(size int) bool {
 	lv := len(c.rows)
 	if lv < size {
 		// extend
-		c.rows = append(c.rows, make([]interface{}, size-lv)...)
+		c.rows = append(c.rows, c.zeroValues(size-lv)...)
 	} else if lv > size {
 		// shrink
 		c.rows = c.rows[:size]
@@ -176,8 +183,7 @@ func (c *column) InsertEmpty(at int, nrows int) bool {
 	if nrows <= 0 || at < 0 || at > len(c.rows) {
 		return false
 	}
-	rows := make([]interface{}, nrows)
-	c.rows = append(c.rows[:at], append(rows, c.rows[at:]...)...)
+	c.rows = append(c.rows[:at], append(c.zeroValues(nrows), c.rows[at:]...)...)
 	return true
 }
 
@@ -220,4 +226,26 @@ func (c *column) asValue(v interface{}) interface{} {
 		}
 	}
 	return nil
+}
+
+func (c *column) ZeroValue() interface{} {
+	switch c.ctype {
+	case Bool:
+		return false
+	case Number:
+		return float64(0)
+	case String:
+		return ""
+	default:
+		return nil
+	}
+}
+
+func (c *column) zeroValues(n int) []interface{} {
+	zero := c.ZeroValue()
+	zv := make([]interface{}, n)
+	for i := range zv {
+		zv[i] = zero
+	}
+	return zv
 }

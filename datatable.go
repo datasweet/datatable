@@ -1,17 +1,22 @@
 package datatable
 
-import "github.com/datasweet/expr"
+import (
+	"github.com/datasweet/expr"
+	"github.com/pkg/errors"
+)
 
 type DataTable interface {
 	Name() string
 	NumCols() int
 	NumRows() int
 	Columns() []DataColumn
-	Rows() []DataRow
-	AddColumn(name string, ctyp ColumnType, values ...interface{}) DataColumn
+	AddColumn(name string, ctyp ColumnType, values ...interface{}) (DataColumn, error)
 	AddExprColumn(name string, ctyp ColumnType, formulae string) (DataColumn, error)
 	GetColumn(name string) (int, DataColumn)
+	Rows() []DataRow
 	GetRow(at int) DataRow
+	NewRow() DataRow
+	AddRow(dr DataRow) bool
 	Swap(colA, colB string) bool
 
 	// DeleteRow(at) bool
@@ -21,18 +26,30 @@ type DataTable interface {
 
 }
 
-type DataRow []interface{}
+type DataRow map[string]interface{}
+
+func (dr DataRow) Set(k string, v interface{}) DataRow {
+	// Check colName exists
+	if _, ok := dr[k]; ok {
+		dr[k] = v
+	}
+	return dr
+}
 
 // table is our main struct
 type table struct {
-	name  string
-	cols  []*column
-	nrows int
+	name   string
+	cols   []*column
+	cindex map[string]int
+	nrows  int
 }
 
 // New creates a new datatable
 func New(name string) DataTable {
-	return &table{name: name}
+	return &table{
+		name:   name,
+		cindex: make(map[string]int, 0),
+	}
 }
 
 // Name returns the datatable's name
@@ -59,63 +76,111 @@ func (t *table) Columns() []DataColumn {
 	return cols
 }
 
-// Rows returns the rows in datatable
-// Computes all expressions.
-func (t *table) Rows() []DataRow {
-	t.evaluateExpressions()
-	rows := make([]DataRow, t.nrows)
-
-	for i := 0; i < t.nrows; i++ {
-		rows[i] = make(DataRow, len(t.cols))
-		for j, col := range t.cols {
-			rows[i][j] = col.GetAt(i)
-		}
-	}
-	return rows
-}
-
 // AddColumn adds a new column
-func (t *table) AddColumn(name string, ctyp ColumnType, values ...interface{}) DataColumn {
+func (t *table) AddColumn(name string, ctyp ColumnType, values ...interface{}) (DataColumn, error) {
+	if _, c := t.GetColumn(name); c != nil {
+		return nil, errors.Errorf("column '%s' already exists", name)
+	}
+
 	col := newColumn(name, ctyp)
 	t.cols = append(t.cols, col)
+	t.cindex[name] = len(t.cols) - 1
+
+	col.Set(values...)
 
 	// Auto extends the table if needed
-	if col.Set(values...) {
-		l := col.Len()
-		if l < t.nrows {
-			col.Size(t.nrows)
-		} else if l > t.nrows {
-			t.size(l)
-		}
+	l := col.Len()
+	if l < t.nrows {
+		col.Size(t.nrows)
+	} else if l > t.nrows {
+		t.size(l)
 	}
 
-	return col
+	return col, nil
 }
 
 // AddExprColumn to adds a column with a binded expression
 func (t *table) AddExprColumn(name string, ctyp ColumnType, formulae string) (DataColumn, error) {
+	if _, c := t.GetColumn(name); c != nil {
+		return nil, errors.Errorf("column '%s' already exists", name)
+	}
+
 	parsed, err := expr.Parse(formulae)
 	if err != nil {
 		return nil, err
 	}
 	col := newExprColumn(name, ctyp, parsed)
 	t.cols = append(t.cols, col)
+	t.cindex[name] = len(t.cols) - 1
+
 	return col, nil
 }
 
-// AddRow to add
-func (t *table) AddRow(values ...interface{}) bool {
-	cnt := len(t.cols)
-	if len(values) != cnt {
-		return false
-	}
-	for i, v := range values {
-		if col := t.cols[i]; col.expr == nil {
-			col.Append(v)
+// GetColumn returns the column index and the column itself
+// If not exists returns -1, nil
+func (t *table) GetColumn(name string) (int, DataColumn) {
+	if i, ok := t.cindex[name]; ok {
+		if i < len(t.cols) {
+			return i, t.cols[i]
 		}
 	}
+	return -1, nil
+}
+
+// Rows returns the rows in datatable
+// Computes all expressions.
+func (t *table) Rows() []DataRow {
+	t.evaluateExpressions()
+
+	rows := make([]DataRow, t.nrows)
+
+	for i := 0; i < t.nrows; i++ {
+		rows[i] = make(DataRow, len(t.cols))
+		for _, col := range t.cols {
+			rows[i][col.Name()] = col.GetAt(i)
+		}
+	}
+
+	return rows
+}
+
+func (t *table) NewRow() DataRow {
+	dr := make(map[string]interface{}, len(t.cols))
+
+	for _, c := range t.cols {
+		dr[c.Name()] = c.ZeroValue()
+	}
+
+	return dr
+}
+
+// AddRow to add
+func (t *table) AddRow(dr DataRow) bool {
+	if dr == nil {
+		return false
+	}
+	for k, v := range dr {
+		if i, _ := t.GetColumn(k); i >= 0 {
+			if col := t.cols[i]; !col.IsExpr() {
+				col.Append(v)
+			}
+		}
+	}
+
 	t.nrows++
 	return true
+}
+
+// GetRow returns the datarow at index
+func (t *table) GetRow(at int) DataRow {
+	if at < 0 || at >= t.NumRows() {
+		return nil
+	}
+	row := make(DataRow, len(t.cols))
+	for _, c := range t.cols {
+		row[c.Name()] = c.GetAt(at)
+	}
+	return row
 }
 
 // Size sets the numbers of rows in our datatabe
@@ -130,29 +195,6 @@ func (t *table) size(size int) bool {
 	}
 	t.nrows = size
 	return ok
-}
-
-// GetColumn returns the column index and the column itself
-// If not exists returns -1, nil
-func (t *table) GetColumn(name string) (int, DataColumn) {
-	for i, c := range t.cols {
-		if c.Name() == name {
-			return i, c
-		}
-	}
-	return -1, nil
-}
-
-// GetRow returns the datarow at index
-func (t *table) GetRow(at int) DataRow {
-	if at < 0 || at >= t.NumRows() {
-		return nil
-	}
-	row := make(DataRow, len(t.cols))
-	for i, c := range t.cols {
-		row[i] = c.GetAt(at)
-	}
-	return row
 }
 
 // Swap swap 2 columns
@@ -185,7 +227,7 @@ func (t *table) exprColsIndex() []int {
 	return indexes
 }
 
-// evaluateExpressions to evalute all columns with a binded expression
+// evaluateExpressions to evaluate all columns with a binded expression
 func (t *table) evaluateExpressions() error {
 	exprCols := t.exprColsIndex()
 	lec := len(exprCols)

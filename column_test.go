@@ -12,18 +12,18 @@ func TestSize(t *testing.T) {
 
 	// Extend
 	assert.True(t, col.Size(3))
-	rowsEq(t, col, nil, nil, nil)
+	rowsEq(t, col, "", "", "")
 
 	assert.True(t, col.SetAt(1, "test"))
-	rowsEq(t, col, nil, "test", nil)
+	rowsEq(t, col, "", "test", "")
 
 	// Shrink
 	assert.True(t, col.Size(2))
-	rowsEq(t, col, nil, "test")
+	rowsEq(t, col, "", "test")
 
 	// Invalid
 	assert.False(t, col.Size(-1))
-	rowsEq(t, col, nil, "test")
+	rowsEq(t, col, "", "test")
 }
 
 func TestSet(t *testing.T) {
@@ -50,11 +50,11 @@ func TestSetAt(t *testing.T) {
 
 	// Auto extend
 	assert.True(t, col.SetAt(3, "hello", "world"))
-	rowsEq(t, col, nil, nil, nil, "hello", "world")
+	rowsEq(t, col, "", "", "", "hello", "world")
 
 	// Rewrite
 	assert.True(t, col.SetAt(1, "bonjour", "monde"))
-	rowsEq(t, col, nil, "bonjour", "monde", "hello", "world")
+	rowsEq(t, col, "", "bonjour", "monde", "hello", "world")
 }
 
 func TestSetBool(t *testing.T) {
@@ -189,11 +189,11 @@ func TestInsertEmpty(t *testing.T) {
 	assert.False(t, col.InsertEmpty(3, 2))
 
 	assert.True(t, col.InsertEmpty(1, 2))
-	rowsEq(t, col, "hello", nil, nil, "world")
+	rowsEq(t, col, "hello", "", "", "world")
 
 	assert.True(t, col.InsertEmpty(0, 1))
-	rowsEq(t, col, nil, "hello", nil, nil, "world")
+	rowsEq(t, col, "", "hello", "", "", "world")
 
 	assert.True(t, col.InsertEmpty(col.Len(), 1))
-	rowsEq(t, col, nil, "hello", nil, nil, "world", nil)
+	rowsEq(t, col, "", "hello", "", "", "world", "")
 }
