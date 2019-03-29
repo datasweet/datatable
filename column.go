@@ -38,6 +38,7 @@ const (
 	String   ColumnType = "string"
 	Number   ColumnType = "number"
 	Datetime ColumnType = "datetime"
+	Raw      ColumnType = "raw"
 )
 
 // newColumn to create a column
@@ -50,10 +51,10 @@ func newColumn(name string, ctyp ColumnType) *column {
 }
 
 // newExprColumn to create a column with a binded expression
-func newExprColumn(name string, ctyp ColumnType, expr expr.Node) *column {
+func newExprColumn(name string, expr expr.Node) *column {
 	return &column{
 		name:  name,
-		ctype: ctyp,
+		ctype: Raw,
 		expr:  expr,
 	}
 }
@@ -224,6 +225,8 @@ func (c *column) asValue(v interface{}) interface{} {
 		if casted, ok := cast.AsDatetime(v); ok {
 			return casted
 		}
+	case Raw:
+		return v
 	}
 	return nil
 }

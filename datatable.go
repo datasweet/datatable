@@ -11,7 +11,7 @@ type DataTable interface {
 	NumRows() int
 	Columns() []DataColumn
 	AddColumn(name string, ctyp ColumnType, values ...interface{}) (DataColumn, error)
-	AddExprColumn(name string, ctyp ColumnType, formulae string) (DataColumn, error)
+	AddExprColumn(name string, formulae string) (DataColumn, error)
 	GetColumn(name string) (int, DataColumn)
 	Rows() []DataRow
 	GetRow(at int) DataRow
@@ -100,7 +100,7 @@ func (t *table) AddColumn(name string, ctyp ColumnType, values ...interface{}) (
 }
 
 // AddExprColumn to adds a column with a binded expression
-func (t *table) AddExprColumn(name string, ctyp ColumnType, formulae string) (DataColumn, error) {
+func (t *table) AddExprColumn(name string, formulae string) (DataColumn, error) {
 	if _, c := t.GetColumn(name); c != nil {
 		return nil, errors.Errorf("column '%s' already exists", name)
 	}
@@ -109,7 +109,8 @@ func (t *table) AddExprColumn(name string, ctyp ColumnType, formulae string) (Da
 	if err != nil {
 		return nil, err
 	}
-	col := newExprColumn(name, ctyp, parsed)
+  
+	col := newExprColumn(name, parsed)
 	t.cols = append(t.cols, col)
 	t.cindex[name] = len(t.cols) - 1
 
