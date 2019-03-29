@@ -8,26 +8,26 @@ import (
 )
 
 func TestSize(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	// Extend
 	assert.True(t, col.Size(3))
-	rowsEq(t, col, nil, nil, nil)
+	rowsEq(t, col, "", "", "")
 
 	assert.True(t, col.SetAt(1, "test"))
-	rowsEq(t, col, nil, "test", nil)
+	rowsEq(t, col, "", "test", "")
 
 	// Shrink
 	assert.True(t, col.Size(2))
-	rowsEq(t, col, nil, "test")
+	rowsEq(t, col, "", "test")
 
 	// Invalid
 	assert.False(t, col.Size(-1))
-	rowsEq(t, col, nil, "test")
+	rowsEq(t, col, "", "test")
 }
 
 func TestSet(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	// Invalid
 	assert.False(t, col.Set())
@@ -42,7 +42,7 @@ func TestSet(t *testing.T) {
 }
 
 func TestSetAt(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	// Invalid
 	assert.False(t, col.SetAt(0))
@@ -50,15 +50,15 @@ func TestSetAt(t *testing.T) {
 
 	// Auto extend
 	assert.True(t, col.SetAt(3, "hello", "world"))
-	rowsEq(t, col, nil, nil, nil, "hello", "world")
+	rowsEq(t, col, "", "", "", "hello", "world")
 
 	// Rewrite
 	assert.True(t, col.SetAt(1, "bonjour", "monde"))
-	rowsEq(t, col, nil, "bonjour", "monde", "hello", "world")
+	rowsEq(t, col, "", "bonjour", "monde", "hello", "world")
 }
 
 func TestSetBool(t *testing.T) {
-	col := NewColumn("test", Bool)
+	col := newColumn("test", Bool)
 
 	col.SetAt(0, true, false, "true", "false", 1, 0, "wrong")
 	rowsEq(t, col, true, false, true, false, true, false, nil)
@@ -71,7 +71,7 @@ func TestSetBool(t *testing.T) {
 }
 
 func TestSetString(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	col.SetAt(0, true, false, 12345, 3.14, "hello", nil)
 	rowsEq(t, col, "true", "false", "12345", "3.14", "hello", nil)
@@ -84,7 +84,7 @@ func TestSetString(t *testing.T) {
 }
 
 func TestSetNumber(t *testing.T) {
-	col := NewColumn("test", Number)
+	col := newColumn("test", Number)
 
 	col.SetAt(0, true, false, 12345, 3.14, "12345", "3.14", "hello", nil)
 	rowsEq(t, col, float64(1), float64(0), float64(12345), float64(3.14), float64(12345), float64(3.14), nil, nil)
@@ -100,7 +100,7 @@ func TestSetDatetime(t *testing.T) {
 	jstimestamp := int64(1551435220270)
 	date := time.Unix(0, jstimestamp*int64(time.Millisecond)).UTC()
 
-	col := NewColumn("test", Datetime)
+	col := newColumn("test", Datetime)
 
 	col.SetAt(0, true, false, 1551435220270, "1551435220270", "2019-03-01T10:13:40.27Z", "hello", nil)
 	rowsEq(t, col, nil, nil, date, date, date, nil, nil)
@@ -113,7 +113,7 @@ func TestSetDatetime(t *testing.T) {
 }
 
 func TestInsertAt(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	col.Set("hello", "world")
 	rowsEq(t, col, "hello", "world")
@@ -134,7 +134,7 @@ func TestInsertAt(t *testing.T) {
 }
 
 func TestAppend(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	// Invalid
 	assert.False(t, col.Append())
@@ -144,7 +144,7 @@ func TestAppend(t *testing.T) {
 }
 
 func TestDeleteAt(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	col.Set("hello", "happy", "go", "land", "world", "!")
 	rowsEq(t, col, "hello", "happy", "go", "land", "world", "!")
@@ -165,7 +165,7 @@ func TestDeleteAt(t *testing.T) {
 }
 
 func TestGetAt(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	col.Set("hello", "happy", "world")
 	rowsEq(t, col, "hello", "happy", "world")
@@ -178,7 +178,7 @@ func TestGetAt(t *testing.T) {
 }
 
 func TestInsertEmpty(t *testing.T) {
-	col := NewColumn("test", String)
+	col := newColumn("test", String)
 
 	col.Set("hello", "world")
 	rowsEq(t, col, "hello", "world")
@@ -189,11 +189,11 @@ func TestInsertEmpty(t *testing.T) {
 	assert.False(t, col.InsertEmpty(3, 2))
 
 	assert.True(t, col.InsertEmpty(1, 2))
-	rowsEq(t, col, "hello", nil, nil, "world")
+	rowsEq(t, col, "hello", "", "", "world")
 
 	assert.True(t, col.InsertEmpty(0, 1))
-	rowsEq(t, col, nil, "hello", nil, nil, "world")
+	rowsEq(t, col, "", "hello", "", "", "world")
 
 	assert.True(t, col.InsertEmpty(col.Len(), 1))
-	rowsEq(t, col, nil, "hello", nil, nil, "world", nil)
+	rowsEq(t, col, "", "hello", "", "", "world", "")
 }

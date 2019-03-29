@@ -1,18 +1,36 @@
 package datatable
 
 import (
+	"strings"
+
 	"github.com/datasweet/cast"
+	"github.com/datasweet/expr"
 )
 
-// Column is a column in our datatable
-// A column contains all rows
-type Column struct {
-	name  string
-	ctype ColumnType
-	rows  []interface{}
+// DataColumn defines a column in our datatable
+type DataColumn interface {
+	Name() string
+	Type() ColumnType
+	Label(v ...string) string // getter / setter
+	Hidden(v ...bool) bool    // getter / setter
+	Len() int
+	Rows() []interface{}
+	GetAt(at int) interface{}
+	IsExpr() bool
 }
 
-// ColumnType defines the Column type (used for formatter / check the Rows)
+// column is a column in our datatable
+// A column contains all rows
+type column struct {
+	name   string
+	ctype  ColumnType
+	rows   []interface{}
+	expr   expr.Node
+	hidden bool
+	label  string
+}
+
+// ColumnType defines the column type (used for formatter / check the Rows)
 type ColumnType string
 
 const (
@@ -22,38 +40,73 @@ const (
 	Datetime ColumnType = "datetime"
 )
 
-// NewColumn creates a column
-func NewColumn(name string, ctyp ColumnType) *Column {
-	col := &Column{
+// newColumn to create a column
+func newColumn(name string, ctyp ColumnType) *column {
+	col := &column{
 		name:  name,
 		ctype: ctyp,
 	}
 	return col
 }
 
+// newExprColumn to create a column with a binded expression
+func newExprColumn(name string, ctyp ColumnType, expr expr.Node) *column {
+	return &column{
+		name:  name,
+		ctype: ctyp,
+		expr:  expr,
+	}
+}
+
 // Name returns name of string
-func (c *Column) Name() string {
+func (c *column) Name() string {
 	return c.name
 }
 
 // Columns returns the binded column type
-func (c *Column) ColumnType() ColumnType {
+func (c *column) Type() ColumnType {
 	return c.ctype
 }
 
-// Rows returns rows in Column
-func (c *Column) Rows() []interface{} {
-	return c.rows
+// Label sets / gets the label of our column
+// If no label, will return the Name()
+func (c *column) Label(v ...string) string {
+	if l := len(v); l == 1 {
+		c.label = strings.TrimSpace(v[0])
+	}
+	if len(c.label) > 0 {
+		return c.label
+	}
+	return c.name
+}
+
+// Hidden sets / gets if the col will be exported
+func (c *column) Hidden(v ...bool) bool {
+	if l := len(v); l == 1 {
+		c.hidden = v[0]
+	}
+	return c.hidden
 }
 
 // Len returns the number of rows
-func (c *Column) Len() int {
+func (c *column) Len() int {
 	return len(c.rows)
 }
 
-// Size set the Column size, ie the number of rows
-// Extend or shrink the rows
-func (c *Column) Size(size int) bool {
+// Rows returns rows in column
+func (c *column) Rows() []interface{} {
+	return c.rows
+}
+
+// IsExpr to know if the column is an expression column,
+// ie a calculated column
+func (c *column) IsExpr() bool {
+	return c.expr != nil
+}
+
+// Size set the column size, ie the number of rows
+// Extend (fill with zero values) or shrink the rows
+func (c *column) Size(size int) bool {
 	if size < 0 {
 		return false
 	}
@@ -61,7 +114,7 @@ func (c *Column) Size(size int) bool {
 	lv := len(c.rows)
 	if lv < size {
 		// extend
-		c.rows = append(c.rows, make([]interface{}, size-lv)...)
+		c.rows = append(c.rows, c.zeroValues(size-lv)...)
 	} else if lv > size {
 		// shrink
 		c.rows = c.rows[:size]
@@ -70,22 +123,22 @@ func (c *Column) Size(size int) bool {
 }
 
 // Set sets the rows
-// If more values are provided than the number of rows in current Column,
-// the Column is extended
-func (c *Column) Set(values ...interface{}) bool {
+// If more values are provided than the number of rows in current column,
+// the column is extended
+func (c *column) Set(values ...interface{}) bool {
 	return c.SetAt(0, values...)
 }
 
 // SetAt sets the rows at index {at}
-// If more values are provided than the number of rows in current Column,
-// the Column is extended
-func (c *Column) SetAt(at int, values ...interface{}) bool {
+// If more values are provided than the number of rows in current column,
+// the column is extended
+func (c *column) SetAt(at int, values ...interface{}) bool {
 	nrows := len(values)
 	if nrows <= 0 || at < 0 {
 		return false
 	}
 
-	// Extends if needed
+	// Extends or shrink if needed
 	if max := at + nrows; max > len(c.rows) {
 		c.Size(max)
 	}
@@ -97,7 +150,7 @@ func (c *Column) SetAt(at int, values ...interface{}) bool {
 }
 
 // Append add a new row at the end
-func (c *Column) Append(values ...interface{}) bool {
+func (c *column) Append(values ...interface{}) bool {
 	nrows := len(values)
 	if nrows <= 0 {
 		return false
@@ -110,7 +163,7 @@ func (c *Column) Append(values ...interface{}) bool {
 }
 
 // InsertAt insert rows at index {at}
-func (c *Column) InsertAt(at int, values ...interface{}) bool {
+func (c *column) InsertAt(at int, values ...interface{}) bool {
 	nrows := len(values)
 	if nrows <= 0 || at < 0 || at > len(c.rows) {
 		return false
@@ -126,17 +179,16 @@ func (c *Column) InsertAt(at int, values ...interface{}) bool {
 }
 
 // InsertEmpty insert {nrows} empty rows at index {at}
-func (c *Column) InsertEmpty(at int, nrows int) bool {
+func (c *column) InsertEmpty(at int, nrows int) bool {
 	if nrows <= 0 || at < 0 || at > len(c.rows) {
 		return false
 	}
-	rows := make([]interface{}, nrows)
-	c.rows = append(c.rows[:at], append(rows, c.rows[at:]...)...)
+	c.rows = append(c.rows[:at], append(c.zeroValues(nrows), c.rows[at:]...)...)
 	return true
 }
 
 // DeleteAt deletes the {n} rows at idx {from}
-func (c *Column) DeleteAt(from, n int) bool {
+func (c *column) DeleteAt(from, n int) bool {
 	if n <= 0 || from < 0 || from+n > len(c.rows) {
 		return false
 	}
@@ -144,17 +196,17 @@ func (c *Column) DeleteAt(from, n int) bool {
 	return true
 }
 
-// GetAt retrieves a row value in Column at index {at}
-func (c *Column) GetAt(at int) interface{} {
+// GetAt retrieves a row value in column at index {at}
+func (c *column) GetAt(at int) interface{} {
 	if at < 0 || at >= len(c.rows) {
 		return nil
 	}
 	return c.rows[at]
 }
 
-// asValue cast the value to the Column type
+// asValue cast the value to the column type
 // return nil if cast is wrong
-func (c *Column) asValue(v interface{}) interface{} {
+func (c *column) asValue(v interface{}) interface{} {
 	switch c.ctype {
 	case Bool:
 		if casted, ok := cast.AsBool(v); ok {
@@ -174,4 +226,26 @@ func (c *Column) asValue(v interface{}) interface{} {
 		}
 	}
 	return nil
+}
+
+func (c *column) ZeroValue() interface{} {
+	switch c.ctype {
+	case Bool:
+		return false
+	case Number:
+		return float64(0)
+	case String:
+		return ""
+	default:
+		return nil
+	}
+}
+
+func (c *column) zeroValues(n int) []interface{} {
+	zero := c.ZeroValue()
+	zv := make([]interface{}, n)
+	for i := range zv {
+		zv[i] = zero
+	}
+	return zv
 }

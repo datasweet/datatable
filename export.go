@@ -1,41 +1,33 @@
 package datatable
 
-// Table returns the table with raw datas
-func (t *DataTable) Table(headers bool) [][]interface{} {
-	var h int
+// ToTable returns the table with raw datas
+func ToTable(dt DataTable, headers bool) [][]interface{} {
+	if dt == nil {
+		return nil
+	}
+
+	dr := dt.Rows()
+	cols := dt.Columns()
+	ncols := len(cols)
+
+	var hr []interface{}
 	if headers {
-		h = 1
-	}
-	rows := make([][]interface{}, t.nrows+h)
-
-	if headers {
-		rows[0] = make([]interface{}, len(t.cols))
-		for i, col := range t.cols {
-			rows[0][i] = col.Name()
+		hr = make([]interface{}, ncols)
+		for i, col := range cols {
+			hr[i] = col.Label()
 		}
 	}
 
-	for j := 0; j < t.nrows; j++ {
-		n := j + h
-		rows[n] = make([]interface{}, len(t.cols))
-		for i, col := range t.cols {
-			rows[n][i] = col.GetAt(j)
+	var rows [][]interface{}
+	rows = append(rows, hr)
+	for _, r := range dr {
+		row := make([]interface{}, ncols)
+		for i, col := range cols {
+			if v, ok := r[col.Name()]; ok {
+				row[i] = v
+			}
 		}
+		rows = append(rows, row)
 	}
-
-	return rows
-}
-
-// ToMap returns the table as an array of map
-func (t *DataTable) ToMap() []map[string]interface{} {
-	rows := make([]map[string]interface{}, t.nrows)
-
-	for j := 0; j < t.nrows; j++ {
-		rows[j] = make(map[string]interface{}, len(t.cols))
-		for i, col := range t.cols {
-			rows[j][col.Name()] = col.GetAt(i)
-		}
-	}
-
 	return rows
 }
