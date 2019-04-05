@@ -17,17 +17,20 @@ type DataColumn interface {
 	Rows() []interface{}
 	GetAt(at int) interface{}
 	IsExpr() bool
+	Expr() string
+	ZeroValue() interface{}
 }
 
 // column is a column in our datatable
 // A column contains all rows
 type column struct {
-	name   string
-	ctype  ColumnType
-	rows   []interface{}
-	expr   expr.Node
-	hidden bool
-	label  string
+	name     string
+	ctype    ColumnType
+	rows     []interface{}
+	formulae string
+	expr     expr.Node
+	hidden   bool
+	label    string
 }
 
 // ColumnType defines the column type (used for formatter / check the Rows)
@@ -51,12 +54,18 @@ func newColumn(name string, ctyp ColumnType) *column {
 }
 
 // newExprColumn to create a column with a binded expression
-func newExprColumn(name string, expr expr.Node) *column {
-	return &column{
-		name:  name,
-		ctype: Raw,
-		expr:  expr,
+func newExprColumn(name, formulae string) (*column, error) {
+	parsed, err := expr.Parse(formulae)
+	if err != nil {
+		return nil, err
 	}
+
+	return &column{
+		name:     name,
+		ctype:    Raw,
+		formulae: formulae,
+		expr:     parsed,
+	}, nil
 }
 
 // Name returns name of string
@@ -103,6 +112,11 @@ func (c *column) Rows() []interface{} {
 // ie a calculated column
 func (c *column) IsExpr() bool {
 	return c.expr != nil
+}
+
+// Expr returns the expression formulae used by column
+func (c *column) Expr() string {
+	return c.formulae
 }
 
 // Size set the column size, ie the number of rows

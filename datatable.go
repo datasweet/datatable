@@ -1,7 +1,6 @@
 package datatable
 
 import (
-	"github.com/datasweet/expr"
 	"github.com/pkg/errors"
 )
 
@@ -17,6 +16,7 @@ type DataTable interface {
 	GetRow(at int) DataRow
 	NewRow() DataRow
 	AddRow(dr DataRow) bool
+	AppendRow(v ...interface{}) bool
 	Swap(colA, colB string) bool
 
 	// DeleteRow(at) bool
@@ -24,16 +24,6 @@ type DataTable interface {
 	// DeleteColumn(name string)
 	// SortBy(colName ...string)
 
-}
-
-type DataRow map[string]interface{}
-
-func (dr DataRow) Set(k string, v interface{}) DataRow {
-	// Check colName exists
-	if _, ok := dr[k]; ok {
-		dr[k] = v
-	}
-	return dr
 }
 
 // table is our main struct
@@ -105,12 +95,10 @@ func (t *table) AddExprColumn(name string, formulae string) (DataColumn, error) 
 		return nil, errors.Errorf("column '%s' already exists", name)
 	}
 
-	parsed, err := expr.Parse(formulae)
+	col, err := newExprColumn(name, formulae)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "can't create expr column")
 	}
-  
-	col := newExprColumn(name, parsed)
 	t.cols = append(t.cols, col)
 	t.cindex[name] = len(t.cols) - 1
 
@@ -169,6 +157,28 @@ func (t *table) AddRow(dr DataRow) bool {
 	}
 
 	t.nrows++
+	return true
+}
+
+// AppendRow add a new row to our table
+// Must faster than dt.AddRow(dt.NewRow()) when you know the structure of datatable
+// <!> a expr col will ignore the passed value
+func (t *table) AppendRow(v ...interface{}) bool {
+	lv := len(v)
+	if lv == 0 {
+		return false
+	}
+
+	for i, col := range t.cols {
+		if !col.IsExpr() && i < lv {
+			col.Append(v[i])
+		} else {
+			col.Append(col.ZeroValue())
+		}
+	}
+
+	t.nrows++
+
 	return true
 }
 

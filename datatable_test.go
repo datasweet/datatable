@@ -144,3 +144,22 @@ func TestSwap(t *testing.T) {
 	)
 
 }
+
+func TestAppendRow(t *testing.T) {
+	tb := New("test")
+	tb.AddColumn("champ", String)
+	tb.AddColumn("win", Number)
+	tb.AddColumn("loose", Number)
+	tb.AddExprColumn("winRate", "(`win` * 100 / (`win` + `loose`))")
+
+	assert.True(t, tb.AppendRow("Xerath", 25, 15, "expr"))
+	assert.True(t, tb.AppendRow("Malzahar", 16, 16, nil))
+	assert.True(t, tb.AppendRow("Vel'Koz", 7, 5, 3))
+
+	checkTable(t, tb,
+		"champ", "win", "loose", "winRate",
+		"Xerath", 25.0, 15.0, 62.5,
+		"Malzahar", 16.0, 16.0, 50.0,
+		"Vel'Koz", 7.0, 5.0, 58.333333333333336,
+	)
+}
