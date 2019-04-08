@@ -9,17 +9,6 @@ import (
 // DataRow contains a row relative to columns
 type DataRow map[string]interface{}
 
-// newDataRow to creates a datarow from columns
-func newDataRow(cols ...DataColumn) DataRow {
-	dr := make(map[string]interface{}, len(cols))
-
-	for _, c := range cols {
-		dr[c.Name()] = c.ZeroValue()
-	}
-
-	return dr
-}
-
 // Set cell
 func (dr DataRow) Set(k string, v interface{}) DataRow {
 	// Check colName exists

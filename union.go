@@ -47,7 +47,7 @@ func Union(left, right DataTable) (DataTable, error) {
 		}
 
 		var err error
-		if lc.IsExpr() {
+		if lc.Computed() {
 			_, err = dt.AddExprColumn(lc.Name(), lc.Expr())
 		} else {
 			_, err = dt.AddColumn(lc.Name(), lc.Type())
@@ -123,12 +123,10 @@ func UnionAll(left, right DataTable) (DataTable, error) {
 		}
 
 		var err error
-		if lc.IsExpr() {
+		if lc.Computed() {
 			_, err = dt.AddExprColumn(lc.Name(), lc.Expr())
 		} else {
-			// add column with values
-			values := append(lc.Rows(), rc.Rows()...)
-			_, err = dt.AddColumn(lc.Name(), lc.Type(), values...)
+			_, err = dt.AddColumn(lc.Name(), lc.Type())
 		}
 
 		if err != nil {
@@ -136,18 +134,9 @@ func UnionAll(left, right DataTable) (DataTable, error) {
 		}
 	}
 
+	// copy rows
+	dt.AddRow(left.Rows()...)
+	dt.AddRow(right.Rows()...)
+
 	return dt, nil
-}
-
-func InnerJoin(left, right DataTable, on func(l, r DataRow) bool) DataTable {
-	if left == nil || right == nil {
-		return nil
-	}
-	if on == nil {
-		return left
-	}
-
-	dt := New(fmt.Sprintf("innerjoin-%s-%s", left.Name(), right.Name()))
-
-	return dt
 }
