@@ -42,7 +42,7 @@ func TestInnerJoin(t *testing.T) {
 	assert.NotNil(t, dt)
 
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
+		"Customers.id", "Customers.prenom", "Customers.nom", "Customers.email", "Customers.ville", "Orders.date_achat", "Orders.num_facture", "Orders.prix_total",
 		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
 		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
 		int64(2), "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
@@ -58,7 +58,7 @@ func TestLeftJoin(t *testing.T) {
 	assert.NotNil(t, dt)
 
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
+		"Customers.id", "Customers.prenom", "Customers.nom", "Customers.email", "Customers.ville", "Orders.date_achat", "Orders.num_facture", "Orders.prix_total",
 		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
 		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
 		int64(2), "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
@@ -75,7 +75,7 @@ func TestRightJoin(t *testing.T) {
 	assert.NotNil(t, dt)
 
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
+		"Customers.id", "Customers.prenom", "Customers.nom", "Customers.email", "Customers.ville", "Orders.date_achat", "Orders.num_facture", "Orders.prix_total",
 		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
 		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
 		int64(2), "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
@@ -92,12 +92,13 @@ func TestJoinWithExpr(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, dt)
 
-	idx, dc := dt.GetColumn("upper_ville")
+	idx, dc := dt.GetColumn("Customers.upper_ville")
 	assert.Equal(t, 5, idx)
 	assert.Equal(t, Raw, dc.Type())
 	assert.False(t, dc.Computed())
+
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "upper_ville", "date_achat", "num_facture", "prix_total",
+		"Customers.id", "Customers.prenom", "Customers.nom", "Customers.email", "Customers.ville", "Customers.upper_ville", "Orders.date_achat", "Orders.num_facture", "Orders.prix_total",
 		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "PARIS", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
 		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "PARIS", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
 		int64(2), "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", "LYON", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,

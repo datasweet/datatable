@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"hash/fnv"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -83,6 +84,14 @@ type joinMeta struct {
 	Cols    []string
 }
 
+func colname(dt DataTable, col string) string {
+	var sb strings.Builder
+	sb.WriteString(dt.Name())
+	sb.WriteString(".")
+	sb.WriteString(col)
+	return sb.String()
+}
+
 func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable, error) {
 	if left == nil {
 		return nil, errors.New("left is nil datatable")
@@ -118,7 +127,7 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 		if col.Computed() {
 			ctyp = Raw
 		}
-		if _, err := dt.AddColumn(name, ctyp); err != nil {
+		if _, err := dt.AddColumn(colname(left, name), ctyp); err != nil {
 			return nil, err
 		}
 		lcols = append(lcols, name)
@@ -148,7 +157,7 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 		if col.Computed() {
 			ctyp = Raw
 		}
-		if _, err := dt.AddColumn(name, ctyp); err != nil {
+		if _, err := dt.AddColumn(colname(right, name), ctyp); err != nil {
 			return nil, err
 		}
 
@@ -191,16 +200,21 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 				row := dt.NewRow()
 
 				for _, name := range ref.Cols {
-					row[name] = refrow.Get(name)
+					row[colname(ref.Table, name)] = refrow.Get(name)
 				}
 				for _, name := range join.Cols {
-					row[name] = joinrow.Get(name)
+					row[colname(join.Table, name)] = joinrow.Get(name)
 				}
 
 				dt.AddRow(row)
 			}
 		} else if !inner {
-			dt.AddRow(refrow)
+			row := make(DataRow, len(refrow))
+			for k, v := range refrow {
+				row[colname(ref.Table, k)] = v
+				delete(row, k)
+			}
+			dt.AddRow(row)
 		}
 	}
 
