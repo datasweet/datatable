@@ -25,18 +25,21 @@ func Using(colName string) ColumnSelector {
 
 // InnerJoin selects records that have matching values in both tables.
 // left datatable is used as reference datatable.
+// <!> InnerJoin transforms an expr column to a raw column
 func InnerJoin(left, right DataTable, on ...ColumnSelector) (DataTable, error) {
 	return join(left, right, innerJoin, on...)
 }
 
 // LeftJoin returns all records from the left table (table1), and the matched records from the right table (table2).
 // The result is NULL from the right side, if there is no match.
+// <!> LeftJoin transforms an expr column to a raw column
 func LeftJoin(left, right DataTable, on ...ColumnSelector) (DataTable, error) {
 	return join(left, right, leftJoin, on...)
 }
 
 // RightJoin returns all records from the right table (table2), and the matched records from the left table (table1).
 // The result is NULL from the left side, when there is no match.
+// <!> RightJoin transforms an expr column to a raw column
 func RightJoin(left, right DataTable, on ...ColumnSelector) (DataTable, error) {
 	return join(left, right, rightJoin, on...)
 }
@@ -110,18 +113,15 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 	// Create columns
 	// Copy left columns : reference table
 	for _, col := range left.Columns() {
-		var err error
 		name := col.Name()
+		ctyp := col.Type()
 		if col.Computed() {
-			_, err = dt.AddExprColumn(name, col.Expr())
-		} else {
-			_, err = dt.AddColumn(name, col.Type())
-			lcols = append(lcols, name)
+			ctyp = Raw
 		}
-
-		if err != nil {
+		if _, err := dt.AddColumn(name, ctyp); err != nil {
 			return nil, err
 		}
+		lcols = append(lcols, name)
 	}
 
 	// Copy rights columns
@@ -131,7 +131,6 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 	// InnerJoin(l, r, []string{"id"}, []string{"user_id"})
 	// if we have on right datatable, an expr with LOWER("user_id") => bug
 	for _, col := range right.Columns() {
-		var err error
 		name := col.Name()
 		found := false
 		for _, clause := range on {
@@ -145,16 +144,15 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 			continue
 		}
 
+		ctyp := col.Type()
 		if col.Computed() {
-			_, err = dt.AddExprColumn(name, col.Expr())
-		} else {
-			_, err = dt.AddColumn(name, col.Type())
-			rcols = append(rcols, name)
+			ctyp = Raw
 		}
-
-		if err != nil {
+		if _, err := dt.AddColumn(name, ctyp); err != nil {
 			return nil, err
 		}
+
+		rcols = append(rcols, name)
 	}
 
 	var ref joinMeta

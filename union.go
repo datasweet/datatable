@@ -46,14 +46,11 @@ func Union(left, right DataTable) (DataTable, error) {
 			return nil, errors.Errorf("wrong column expr between left '%s' and right '%s' at index %d", lc.Expr(), rc.Expr(), i)
 		}
 
-		var err error
+		ctyp := lc.Type()
 		if lc.Computed() {
-			_, err = dt.AddExprColumn(lc.Name(), lc.Expr())
-		} else {
-			_, err = dt.AddColumn(lc.Name(), lc.Type())
+			ctyp = Raw
 		}
-
-		if err != nil {
+		if _, err := dt.AddColumn(lc.Name(), ctyp); err != nil {
 			return nil, err
 		}
 	}
@@ -122,14 +119,11 @@ func UnionAll(left, right DataTable) (DataTable, error) {
 			return nil, errors.Errorf("wrong column expr between left '%s' and right '%s' at index %d", lc.Expr(), rc.Expr(), i)
 		}
 
-		var err error
+		ctyp := lc.Type()
 		if lc.Computed() {
-			_, err = dt.AddExprColumn(lc.Name(), lc.Expr())
-		} else {
-			_, err = dt.AddColumn(lc.Name(), lc.Type())
+			ctyp = Raw
 		}
-
-		if err != nil {
+		if _, err := dt.AddColumn(lc.Name(), ctyp); err != nil {
 			return nil, err
 		}
 	}

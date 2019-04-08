@@ -71,3 +71,29 @@ func TestUnion(t *testing.T) {
 		"Paul", "Moreau", "Lyon", time.Date(1976, time.April, 19, 0, 0, 0, 0, time.UTC), int64(133),
 	)
 }
+
+func TestUnionWithExpr(t *testing.T) {
+	a, b := sampleForUnion(t)
+	a.AddExprColumn("upper_ville", "UPPER(ville)")
+	b.AddExprColumn("upper_ville", "UPPER(ville)")
+
+	dt, err := Union(a, b)
+	assert.NoError(t, err)
+	assert.Equal(t, "union-magasin1-magasin2", dt.Name())
+	assert.Equal(t, 6, dt.NumRows())
+
+	idx, dc := dt.GetColumn("upper_ville")
+	assert.Equal(t, 5, idx)
+	assert.Equal(t, Raw, dc.Type())
+	assert.False(t, dc.Computed())
+
+	checkTable(t, dt,
+		"prenom", "nom", "ville", "date_naissance", "total_achat", "upper_ville",
+		"Léon", "Dupuis", "Paris", time.Date(1983, time.March, 6, 0, 0, 0, 0, time.UTC), int64(135), "PARIS",
+		"Marie", "Bernard", "Paris", time.Date(1993, time.July, 3, 0, 0, 0, 0, time.UTC), int64(75), "PARIS",
+		"Sophie", "Dupond", "Marseille", time.Date(1986, time.February, 22, 0, 0, 0, 0, time.UTC), int64(27), "MARSEILLE",
+		"Marcel", "Martin", "Paris", time.Date(1976, time.November, 24, 0, 0, 0, 0, time.UTC), int64(39), "PARIS",
+		"Marion", "Leroy", "Lyon", time.Date(1982, time.October, 27, 0, 0, 0, 0, time.UTC), int64(285), "LYON",
+		"Paul", "Moreau", "Lyon", time.Date(1976, time.April, 19, 0, 0, 0, 0, time.UTC), int64(133), "LYON",
+	)
+}
