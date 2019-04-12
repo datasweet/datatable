@@ -10,28 +10,28 @@ func TestNewTable(t *testing.T) {
 	tb := New("test")
 	assert.Equal(t, 0, tb.NumCols())
 
-	tb.AddColumn("sessions", Number)
-	tb.AddColumn("bounces", Number)
-	tb.AddColumn("bounceRate", Number)
+	tb.AddColumn("sessions", Int, 120)
+	tb.AddColumn("bounces", Int)
+	tb.AddColumn("bounceRate", Float)
 
 	cols := tb.Columns()
 	assert.Len(t, cols, 3)
 	assert.Equal(t, "sessions", cols[0].Name())
 	assert.Equal(t, "bounces", cols[1].Name())
 	assert.Equal(t, "bounceRate", cols[2].Name())
-	assert.Equal(t, 0, tb.NumRows())
+	assert.Equal(t, 1, tb.NumRows())
 
-	tb.AddColumn("pageViews", Number, 1, 2, 3, 4, 5)
+	tb.AddColumn("pageViews", Int, 1, 2, 3, 4, 5)
 	assert.Equal(t, 4, tb.NumCols())
 	assert.Equal(t, 5, tb.NumRows())
 
 	checkTable(t, tb,
 		"sessions", "bounces", "bounceRate", "pageViews",
-		0.0, 0.0, 0.0, 1.0,
-		0.0, 0.0, 0.0, 2.0,
-		0.0, 0.0, 0.0, 3.0,
-		0.0, 0.0, 0.0, 4.0,
-		0.0, 0.0, 0.0, 5.0,
+		int64(120), int64(0), 0.0, int64(1),
+		int64(0), int64(0), 0.0, int64(2),
+		int64(0), int64(0), 0.0, int64(3),
+		int64(0), int64(0), 0.0, int64(4),
+		int64(0), int64(0), 0.0, int64(5),
 	)
 }
 
@@ -58,22 +58,22 @@ func TestNewRow(t *testing.T) {
 		"Ahri",
 	)
 
-	tb.AddColumn("win", Number)
+	tb.AddColumn("win", Int)
 	checkTable(t, tb,
 		"champ", "win",
-		"Malzahar", 0.0,
-		"Xerath", 0.0,
-		"", 0.0,
-		"Ahri", 0.0,
+		"Malzahar", int64(0),
+		"Xerath", int64(0),
+		"", int64(0),
+		"Ahri", int64(0),
 	)
 
-	tb.AddColumn("loose", Number, 3, 4, nil)
+	tb.AddColumn("loose", Int, 3, 4, nil)
 	checkTable(t, tb,
 		"champ", "win", "loose",
-		"Malzahar", 0.0, 3.0,
-		"Xerath", 0.0, 4.0,
-		"", 0.0, nil,
-		"Ahri", 0.0, 0.0,
+		"Malzahar", int64(0), int64(3),
+		"Xerath", int64(0), int64(4),
+		"", int64(0), nil,
+		"Ahri", int64(0), int64(0),
 	)
 
 }
@@ -82,16 +82,35 @@ func TestExprColumn(t *testing.T) {
 	tb := New("test")
 	tb.AddColumn("champ", String, "Malzahar", "Xerath", "Teemo")
 	tb.AddExprColumn("champion", "upper(`champ`)")
-	tb.AddColumn("win", Number, 10, 20, 666)
-	tb.AddColumn("loose", Number, 6, 5, 666)
+	tb.AddColumn("win", Int, 10, 20, 666)
+	tb.AddColumn("loose", Int, 6, 5, 666)
 	tb.AddExprColumn("winRate", "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
 	tb.AddExprColumn("sum", "sum(`win`)")
 
 	checkTable(t, tb,
 		"champ", "champion", "win", "loose", "winRate", "sum",
-		"Malzahar", "MALZAHAR", 10.0, 6.0, "62.5 %", 696.0,
-		"Xerath", "XERATH", 20.0, 5.0, "80 %", 696.0,
-		"Teemo", "TEEMO", 666.0, 666.0, "50 %", 696.0,
+		"Malzahar", "MALZAHAR", int64(10), int64(6), "62.5 %", 696.0,
+		"Xerath", "XERATH", int64(20), int64(5), "80 %", 696.0,
+		"Teemo", "TEEMO", int64(666), int64(666), "50 %", 696.0,
+	)
+}
+
+func TestAppendRow(t *testing.T) {
+	tb := New("test")
+	tb.AddColumn("champ", String)
+	tb.AddColumn("win", Int)
+	tb.AddColumn("loose", Int)
+	tb.AddExprColumn("winRate", "(`win` * 100 / (`win` + `loose`))")
+
+	assert.True(t, tb.AppendRow("Xerath", 25, 15, "expr"))
+	assert.True(t, tb.AppendRow("Malzahar", 16, 16, nil))
+	assert.True(t, tb.AppendRow("Vel'Koz", 7, 5, 3))
+
+	checkTable(t, tb,
+		"champ", "win", "loose", "winRate",
+		"Xerath", int64(25), int64(15), 62.5,
+		"Malzahar", int64(16), int64(16), 50.0,
+		"Vel'Koz", int64(7), int64(5), 58.333333333333336,
 	)
 }
 
@@ -142,5 +161,4 @@ func TestSwap(t *testing.T) {
 		"Twist", "twist", "0005",
 		"Filled", "filled", "0006",
 	)
-
 }
