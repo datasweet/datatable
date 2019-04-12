@@ -105,3 +105,22 @@ func TestJoinWithExpr(t *testing.T) {
 		int64(3), "Marine", "Prevost", "m.prevost@example.com", "Lille", "LILLE", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
 	)
 }
+
+func TestJoinWithColumnName(t *testing.T) {
+	customers, orders := sampleForJoin()
+	if _, dc := customers.GetColumn("id"); dc != nil {
+		dc.Label("ClientID")
+	}
+
+	dt, err := InnerJoin(customers, orders, On("id", "user_id"))
+	assert.NoError(t, err)
+	assert.NotNil(t, dt)
+
+	checkTable(t, dt,
+		"Customers.ClientID", "Customers.prenom", "Customers.nom", "Customers.email", "Customers.ville", "Orders.date_achat", "Orders.num_facture", "Orders.prix_total",
+		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		int64(1), "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		int64(2), "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		int64(3), "Marine", "Prevost", "m.prevost@example.com", "Lille", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+	)
+}

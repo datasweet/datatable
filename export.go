@@ -8,23 +8,27 @@ func ToTable(dt DataTable, headers bool) [][]interface{} {
 
 	dr := dt.Rows()
 	cols := dt.Columns()
-	ncols := len(cols)
 
 	var hr []interface{}
 	if headers {
-		hr = make([]interface{}, ncols)
-		for i, col := range cols {
-			hr[i] = col.Label()
+		for _, col := range cols {
+			if !col.Hidden() {
+				label := col.Label()
+				if len(label) == 0 {
+					label = col.Name()
+				}
+				hr = append(hr, label)
+			}
 		}
 	}
 
 	var rows [][]interface{}
 	rows = append(rows, hr)
 	for _, r := range dr {
-		row := make([]interface{}, ncols)
-		for i, col := range cols {
-			if v, ok := r[col.Name()]; ok {
-				row[i] = v
+		var row []interface{}
+		for _, col := range cols {
+			if !col.Hidden() {
+				row = append(row, r[col.Name()])
 			}
 		}
 		rows = append(rows, row)

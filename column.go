@@ -77,15 +77,11 @@ func (c *column) Type() ColumnType {
 }
 
 // Label sets / gets the label of our column
-// If no label, will return the Name()
 func (c *column) Label(v ...string) string {
 	if l := len(v); l == 1 {
 		c.label = strings.TrimSpace(v[0])
 	}
-	if len(c.label) > 0 {
-		return c.label
-	}
-	return c.name
+	return c.label
 }
 
 // Hidden sets / gets if the col will be exported

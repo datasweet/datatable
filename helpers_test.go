@@ -8,7 +8,12 @@ import (
 
 // checkTable to check if a table contains cells
 func checkTable(t *testing.T, tb DataTable, cells ...interface{}) {
-	ncols := tb.NumCols()
+	var ncols int
+	for _, c := range tb.Columns() {
+		if !c.Hidden() {
+			ncols++
+		}
+	}
 	nrows := tb.NumRows() + 1 // headers !
 	assert.Len(t, cells, ncols*nrows)
 

@@ -127,9 +127,14 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 		if col.Computed() {
 			ctyp = Raw
 		}
-		if _, err := dt.AddColumn(colname(left, name), ctyp); err != nil {
+		dc, err := dt.AddColumn(colname(left, name), ctyp)
+		if err != nil {
 			return nil, err
 		}
+		if label := col.Label(); len(label) > 0 {
+			dc.Label(colname(left, label))
+		}
+		dc.Hidden(col.Hidden())
 		lcols = append(lcols, name)
 	}
 
@@ -157,9 +162,14 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 		if col.Computed() {
 			ctyp = Raw
 		}
-		if _, err := dt.AddColumn(colname(right, name), ctyp); err != nil {
+		dc, err := dt.AddColumn(colname(right, name), ctyp)
+		if err != nil {
 			return nil, err
 		}
+		if label := col.Label(); len(label) > 0 {
+			dc.Label(colname(right, label))
+		}
+		dc.Hidden(col.Hidden())
 
 		rcols = append(rcols, name)
 	}
