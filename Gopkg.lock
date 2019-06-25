@@ -10,12 +10,11 @@
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:daa9076bc9db7de3c583ff1b66d6bf008c15d0b883b082b38049a1aafc35d2b7"
+  digest = "1:abfb9958e242b440fc53cbba259b7d35eb63ba0217dcdb0341b0ebc5b049592c"
   name = "github.com/datasweet/expr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cefb33523b88b203226a7d0f452bdfac7c098578"
-  version = "v1.2.0"
+  revision = "694796789a7129264aee97078aa2d128407ac8cf"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"

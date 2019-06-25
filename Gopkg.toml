@@ -4,7 +4,7 @@
 
 [[constraint]]
   name = "github.com/datasweet/expr"
-  version = "1.2.0"
+  revision = "694796789a7129264aee97078aa2d128407ac8cf"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
