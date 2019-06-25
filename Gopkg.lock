@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:cfb26c6be067d1a8b62cef93ab0920e92d4d8dfda4d5813fafe4b2ce0b823d22"
+  digest = "1:0e52f325adedf096ad882f886e3158400c7b01feecadde894e5b75a184fbbd27"
   name = "github.com/datasweet/cast"
   packages = ["."]
   pruneopts = "UT"
-  revision = "fba35ddd9a947482c99d9ce613a7790871a66bd7"
-  version = "v1.0.0"
+  revision = "09e92a090bcce47b53cf72bcf8bc3787fe526fde"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:daa9076bc9db7de3c583ff1b66d6bf008c15d0b883b082b38049a1aafc35d2b7"
@@ -34,6 +34,14 @@
   version = "v0.5.0"
 
 [[projects]]
+  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
+
+[[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
@@ -55,6 +63,7 @@
   input-imports = [
     "github.com/datasweet/cast",
     "github.com/datasweet/expr",
+    "github.com/pkg/errors",
     "github.com/stretchr/testify/assert",
   ]
   solver-name = "gps-cdcl"
