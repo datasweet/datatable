@@ -71,7 +71,7 @@ func Union(left, right DataTable) (DataTable, error) {
 		}
 
 		if !dt.AddRow(r) {
-			return nil, errors.Errorf("can't add row at index %d")
+			return nil, errors.Errorf("can't add row at index %d", i)
 		}
 
 		// Add to cache
