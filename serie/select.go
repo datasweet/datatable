@@ -42,6 +42,7 @@ func (s *serie) FindRows(where ValuePredicate) []int {
 	}
 	var indexes []int
 	for i, val := range s.values {
+		// TODO: better search
 		if where(val) {
 			indexes = append(indexes, i+1)
 		}

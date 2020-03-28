@@ -5,6 +5,8 @@ import (
 	"reflect"
 )
 
+const Raw = ValueType("raw")
+
 type rawValue struct {
 	vtyp  ValueType
 	typ   reflect.Type

@@ -32,8 +32,6 @@ type Value interface {
 
 type ValueType string
 
-const Raw = ValueType("raw")
-
 type ValueBuilder func(v interface{}) Value
 
 type ValuePredicate func(val Value) bool
