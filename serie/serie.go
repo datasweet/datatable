@@ -3,145 +3,175 @@ package serie
 import (
 	"fmt"
 	"reflect"
+	"sort"
+
+	"github.com/datasweet/datatable/value"
 )
 
 // Serie describe a serie
 type Serie interface {
-	Type() ValueType
-	Len() int
+	Type() value.Type
+	Error() error
+	Value(at int) interface{}
 	Values() []interface{}
 
 	// Mutate
 	Append(v ...interface{})
 	Prepend(v ...interface{})
-	Insert(at int, v ...interface{}) error
+	Insert(at int, v ...interface{})
+	Update(at int, v interface{})
+	Delete(at int)
 
 	// Select
 	Head(size int) Serie
 	Tail(size int) Serie
 	Subset(at, size int) Serie
 	Pick(at ...int) Serie
-	FindRows(where ValuePredicate) []int
-	Filter(where ValuePredicate) Serie
+	FindRows(where value.Predicate) []int
+	Filter(where value.Predicate) Serie
+	Distinct() Serie
+
+	// Clone
+	Clone() Serie
+
+	// Sort
+	sort.Interface
+	SortAsc() Serie
+	SortDesc() Serie
 
 	// Print
 	Print(opts ...PrintOption) string
 	fmt.Stringer
 }
 
-// Serie implementation
-type serie struct {
-	typ     ValueType
-	builder ValueBuilder
-	values  []Value
+func NewBool(v ...interface{}) Serie {
+	s := newSerie(value.Bool, value.NewBool)
+	s.Append(v...)
+	return s
 }
 
-func NewBool(v ...interface{}) Serie {
-	s := newSerie(Bool, NewBoolValue)
+func NewInt(v ...interface{}) Serie {
+	s := newSerie(value.Int, value.NewInt)
 	s.Append(v...)
 	return s
 }
 
 func NewInt64(v ...interface{}) Serie {
-	s := newSerie(Int64, NewInt64Value)
+	s := newSerie(value.Int64, value.NewInt64)
 	s.Append(v...)
 	return s
 }
 
 func NewInt32(v ...interface{}) Serie {
-	s := newSerie(Int32, NewInt32Value)
+	s := newSerie(value.Int32, value.NewInt32)
 	s.Append(v...)
 	return s
 }
 
 func NewInt16(v ...interface{}) Serie {
-	s := newSerie(Int16, NewInt16Value)
+	s := newSerie(value.Int16, value.NewInt16)
 	s.Append(v...)
 	return s
 }
 
 func NewInt8(v ...interface{}) Serie {
-	s := newSerie(Int8, NewInt8Value)
+	s := newSerie(value.Int8, value.NewInt8)
+	s.Append(v...)
+	return s
+}
+
+func NewUint(v ...interface{}) Serie {
+	s := newSerie(value.Uint, value.NewUint)
 	s.Append(v...)
 	return s
 }
 
 func NewUint64(v ...interface{}) Serie {
-	s := newSerie(Uint64, NewUint64Value)
+	s := newSerie(value.Uint64, value.NewUint64)
 	s.Append(v...)
 	return s
 }
 
 func NewUint32(v ...interface{}) Serie {
-	s := newSerie(Uint32, NewUint32Value)
+	s := newSerie(value.Uint32, value.NewUint32)
 	s.Append(v...)
 	return s
 }
 
 func NewUint16(v ...interface{}) Serie {
-	s := newSerie(Uint16, NewUint16Value)
+	s := newSerie(value.Uint16, value.NewUint16)
 	s.Append(v...)
 	return s
 }
 
 func NewUint8(v ...interface{}) Serie {
-	s := newSerie(Uint8, NewUint8Value)
+	s := newSerie(value.Uint8, value.NewUint8)
 	s.Append(v...)
 	return s
 }
 
 func NewString(v ...interface{}) Serie {
-	s := newSerie(String, NewStringValue)
+	s := newSerie(value.String, value.NewString)
+	s.Append(v...)
+	return s
+}
+
+func NewRaw(v ...interface{}) Serie {
+	builder := func(v interface{}) value.Value {
+		return value.NewRaw(v, nil)
+	}
+	s := newSerie(value.Raw, builder)
 	s.Append(v...)
 	return s
 }
 
 func NewGeneric(concretType interface{}, v ...interface{}) Serie {
 	ctyp := reflect.TypeOf(concretType)
-	builder := func(v interface{}) Value {
-		return NewRawValue(v, ctyp)
+	builder := func(v interface{}) value.Value {
+		return value.NewRaw(v, ctyp)
 	}
-	s := newSerie(valueTypeFromReflect(ctyp), builder)
+	s := newSerie(value.TypeFromReflect(ctyp), builder)
 	s.Append(v...)
 	return s
 }
 
-func newSerie(typ ValueType, builder ValueBuilder) Serie {
+// Serie implementation
+type serie struct {
+	typ     value.Type
+	builder value.Builder
+	values  []value.Value
+	err     error
+}
+
+func newSerie(typ value.Type, builder value.Builder) Serie {
 	return &serie{
 		typ:     typ,
 		builder: builder,
 	}
 }
 
-func (s *serie) Type() ValueType {
+func (s *serie) Type() value.Type {
 	return s.typ
 }
 
-func (s *serie) Len() int {
-	return len(s.values)
+func (s *serie) Error() error {
+	return s.err
+}
+
+func (s *serie) Value(at int) interface{} {
+	if s.err != nil {
+		return nil
+	}
+	if at < 0 || at >= len(s.values) {
+		return nil
+	}
+	return s.values[at].Val()
 }
 
 func (s *serie) Values() []interface{} {
 	values := make([]interface{}, 0, len(s.values))
-	for i, v := range s.values {
-		values[i] = v.Val()
+	for _, v := range s.values {
+		values = append(values, v.Val())
 	}
 	return values
-}
-
-func (s *serie) clone(withValues bool) *serie {
-	var values []Value
-
-	if withValues {
-		values := make([]Value, len(s.values))
-		for i, val := range s.values {
-			values[i] = val.Clone()
-		}
-	}
-
-	return &serie{
-		typ:     s.typ,
-		builder: s.builder,
-		values:  values,
-	}
 }

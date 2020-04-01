@@ -6,10 +6,10 @@ import (
 	"github.com/datasweet/cast"
 )
 
-const Uint8 = ValueType("int8")
-const Uint16 = ValueType("int16")
-const Uint32 = ValueType("int32")
-const Uint64 = ValueType("int64")
+const Uint8 = ValueType("uint8")
+const Uint16 = ValueType("uint16")
+const Uint32 = ValueType("uint32")
+const Uint64 = ValueType("uint64")
 
 type uintValue struct {
 	bitSize int
