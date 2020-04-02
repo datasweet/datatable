@@ -14,7 +14,7 @@ type champion struct {
 }
 
 func TestRawValue(t *testing.T) {
-	val := value.NewRaw(champion{"Teemo", 100}, champion{})
+	val := value.Raw(champion{"Teemo", 100}, champion{})
 	assert.NotNil(t, val)
 	assert.Equal(t, value.Type("champion"), val.Type())
 	assert.True(t, val.IsValid())
@@ -26,7 +26,7 @@ func TestRawValue(t *testing.T) {
 }
 
 func TestCloneRawValue(t *testing.T) {
-	val := value.NewRaw(champion{"Teemo", 100}, champion{})
+	val := value.Raw(champion{"Teemo", 100}, champion{})
 	assert.NotNil(t, val)
 	assert.Equal(t, value.Type("champion"), val.Type())
 	assert.True(t, val.IsValid())

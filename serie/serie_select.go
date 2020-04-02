@@ -42,7 +42,7 @@ func (s *serie) Pick(at ...int) Serie {
 	return ns
 }
 
-func (s *serie) FindRows(where value.Predicate) []int {
+func (s *serie) FindRows(where Predicate) []int {
 	if s.err != nil {
 		return nil
 	}
@@ -59,7 +59,7 @@ func (s *serie) FindRows(where value.Predicate) []int {
 	return indexes
 }
 
-func (s *serie) Filter(where value.Predicate) Serie {
+func (s *serie) Filter(where Predicate) Serie {
 	rows := s.FindRows(where)
 	return s.Pick(rows...)
 }

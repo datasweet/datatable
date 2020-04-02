@@ -10,7 +10,7 @@ import (
 )
 
 func TestHead(t *testing.T) {
-	s := serie.NewInt64(1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := serie.Int64(1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s, "1 2 3 4 5 6 7 8 9")
 	assertSerieEq(t, s.Head(5), "1 2 3 4 5")
 	assertSerieEq(t, s.Head(1), "1")
@@ -21,7 +21,7 @@ func TestHead(t *testing.T) {
 }
 
 func TestTail(t *testing.T) {
-	s := serie.NewInt64(1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := serie.Int64(1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s, "1 2 3 4 5 6 7 8 9")
 	assertSerieEq(t, s.Tail(5), "5 6 7 8 9")
 	assertSerieEq(t, s.Tail(1), "9")
@@ -32,7 +32,7 @@ func TestTail(t *testing.T) {
 }
 
 func TestSubset(t *testing.T) {
-	s := serie.NewInt64(1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := serie.Int64(1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s, "1 2 3 4 5 6 7 8 9")
 	assertSerieEq(t, s.Subset(4, 3), "5 6 7")
 	assertSerieEq(t, s.Subset(7, 2), "8 9")
@@ -47,7 +47,7 @@ func TestSubset(t *testing.T) {
 }
 
 func TestPick(t *testing.T) {
-	s := serie.NewInt64(1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := serie.Int64(1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s, "1 2 3 4 5 6 7 8 9")
 	assertSerieEq(t, s.Pick(0, 4, -1, 8, 9, 1), "1 5 #NULL! 9 #NULL! 2")
 	assertSerieEq(t, s.Pick(), "nil")
@@ -55,7 +55,7 @@ func TestPick(t *testing.T) {
 }
 
 func TestFindRows(t *testing.T) {
-	s := serie.NewInt64(1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := serie.Int64(1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s, "1 2 3 4 5 6 7 8 9")
 	assert.Equal(t, []int{0, 2, 4, 6, 8}, s.FindRows(func(val value.Value) bool {
 		i := val.Val().(int64)
@@ -64,7 +64,7 @@ func TestFindRows(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
-	s := serie.NewInt64(1, 2, 3, 4, 5, 6, 7, 8, 9)
+	s := serie.Int64(1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s, "1 2 3 4 5 6 7 8 9")
 	assertSerieEq(t, s.Filter(func(val value.Value) bool {
 		i := val.Val().(int64)

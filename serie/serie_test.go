@@ -9,9 +9,9 @@ import (
 )
 
 func TestNewInt64Serie(t *testing.T) {
-	s := serie.NewInt64()
+	s := serie.Int64()
 	assert.NotNil(t, s)
-	assert.Equal(t, value.Int64, s.Type())
+	assert.Equal(t, value.Int64Type, s.Type())
 	assert.Equal(t, 0, s.Len())
 	assertSerieEq(t, s, "nil")
 

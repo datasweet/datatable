@@ -6,109 +6,130 @@ import (
 	"github.com/datasweet/cast"
 )
 
-const Int8 = Type("int8")
-const Int16 = Type("int16")
-const Int32 = Type("int32")
-const Int64 = Type("int64")
-const Int = Type("int")
+const Int8Type = Type("int8")
+const Int16Type = Type("int16")
+const Int32Type = Type("int32")
+const Int64Type = Type("int64")
+const IntType = Type("int")
 
 type intValue struct {
 	bitSize int
-	val     *int64
+	val     int64
+	null    bool
 }
 
-func NewInt(v interface{}) Value {
-	value := &intValue{}
-	value.Set(v)
+func newInt(bitSize int, v ...interface{}) Value {
+	value := &intValue{bitSize: bitSize}
+	if len(v) == 1 {
+		value.Set(v[0])
+	}
 	return value
 }
 
-func NewInt64(v interface{}) Value {
-	value := &intValue{bitSize: 64}
-	value.Set(v)
-	return value
+// Int to create a new int value
+// Int() will create the default value, ie "0"
+// Int(v) will parse the v value as int, returns nil if error
+func Int(v ...interface{}) Value {
+	return newInt(0, v...)
 }
 
-func NewInt32(v interface{}) Value {
-	value := &intValue{bitSize: 32}
-	value.Set(v)
-	return value
+// Int64 to create a new int64 value
+// Int64() will create the default value, ie "0"
+// Int64(v) will parse the v value as int64, returns nil if error
+func Int64(v ...interface{}) Value {
+	return newInt(64, v...)
 }
 
-func NewInt16(v interface{}) Value {
-	value := &intValue{bitSize: 16}
-	value.Set(v)
-	return value
+// Int32 to create a new int32 value
+// Int32() will create the default value, ie "0"
+// Int32(v) will parse the v value as int32, returns nil if error
+func Int32(v ...interface{}) Value {
+	return newInt(32, v...)
 }
 
-func NewInt8(v interface{}) Value {
-	value := &intValue{bitSize: 8}
-	value.Set(v)
-	return value
+// Int16 to create a new int16 value
+// Int16() will create the default value, ie "0"
+// Int16(v) will parse the v value as int16, returns nil if error
+func Int16(v ...interface{}) Value {
+	return newInt(16, v...)
+}
+
+// Int8 to create a new int8 value
+// Int8() will create the default value, ie "0"
+// Int8(v) will parse the v value as int8, returns nil if error
+func Int8(v ...interface{}) Value {
+	return newInt(8, v...)
 }
 
 func (value *intValue) Type() Type {
 	switch value.bitSize {
 	default:
-		return Int
+		return IntType
 	case 64:
-		return Int64
+		return Int64Type
 	case 32:
-		return Int32
+		return Int32Type
 	case 16:
-		return Int16
+		return Int16Type
 	case 8:
-		return Int8
+		return Int8Type
 	}
 }
 
 func (value *intValue) Val() interface{} {
-	if value.val == nil {
+	if value.null {
 		return nil
 	}
 	switch value.bitSize {
 	default:
-		return int(*value.val)
+		return int(value.val)
 	case 64:
-		return *value.val
+		return value.val
 	case 32:
-		return int32(*value.val)
+		return int32(value.val)
 	case 16:
-		return int16(*value.val)
+		return int16(value.val)
 	case 8:
-		return int8(*value.val)
+		return int8(value.val)
 	}
 }
 
-func (value *intValue) Set(v interface{}) {
-	value.val = nil
+func (value *intValue) Set(v interface{}) Value {
+	value.val = 0
+	value.null = true
 
 	if casted, ok := cast.AsInt(v); ok {
 		switch value.bitSize {
 		default:
 			if int64(int(casted)) == casted {
-				value.val = &casted
+				value.val = casted
+				value.null = false
 			}
 		case 64:
-			value.val = &casted
+			value.val = casted
+			value.null = false
 		case 32:
 			if int64(int32(casted)) == casted {
-				value.val = &casted
+				value.val = casted
+				value.null = false
 			}
 		case 16:
 			if int64(int16(casted)) == casted {
-				value.val = &casted
+				value.val = casted
+				value.null = false
 			}
 		case 8:
 			if int64(int8(casted)) == casted {
-				value.val = &casted
+				value.val = casted
+				value.null = false
 			}
 		}
 	}
+	return value
 }
 
 func (value *intValue) IsValid() bool {
-	return value.val != nil
+	return !value.null
 }
 
 // Compare the current 'value' 'to' an other value
@@ -122,23 +143,21 @@ func (value *intValue) Compare(to Value) int {
 	iv, ok := to.(*intValue)
 	if !ok {
 		// try to convert
-		iv = NewInt64(to.Val()).(*intValue)
+		iv = Int64(to.Val()).(*intValue)
 	}
 
-	if iv.val == nil {
-		if value.val == nil {
+	if iv.null {
+		if value.null {
 			return Eq
 		}
 		return Gt
 	}
 
-	a, b := *value.val, *iv.val
-
-	if a == b {
+	if value.val == iv.val {
 		return Eq
 	}
 
-	if a > b {
+	if value.val > iv.val {
 		return Gt
 	}
 
@@ -146,20 +165,14 @@ func (value *intValue) Compare(to Value) int {
 }
 
 func (value *intValue) Clone() Value {
-	var cpy *int64
-	if value.val != nil {
-		cpy = new(int64)
-		*cpy = *value.val
-	}
-	return &intValue{
-		val:     cpy,
-		bitSize: value.bitSize,
-	}
+	var cpy intValue
+	cpy = *value
+	return &cpy
 }
 
 func (value *intValue) String() string {
-	if value.val == nil {
+	if value.null {
 		return nullValueStr
 	}
-	return strconv.FormatInt(*value.val, 10)
+	return strconv.FormatInt(value.val, 10)
 }

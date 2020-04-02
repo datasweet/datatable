@@ -4,42 +4,45 @@ import (
 	"github.com/datasweet/cast"
 )
 
-const String = Type("string")
+const StringType = Type("string")
 
 type stringValue struct {
-	val   string
-	valid bool
+	val  string
+	null bool
 }
 
-func NewString(v interface{}) Value {
+func String(v ...interface{}) Value {
 	value := &stringValue{}
-	value.Set(v)
+	if len(v) == 1 {
+		value.Set(v[0])
+	}
 	return value
 }
 
 func (value *stringValue) Type() Type {
-	return String
+	return StringType
 }
 
 func (value *stringValue) Val() interface{} {
-	if value.valid {
-		return value.val
+	if value.null {
+		return nil
 	}
-	return nil
+	return value.val
 }
 
-func (value *stringValue) Set(v interface{}) {
+func (value *stringValue) Set(v interface{}) Value {
 	value.val = ""
-	value.valid = false
+	value.null = true
 
 	if casted, ok := cast.AsString(v); ok {
 		value.val = casted
-		value.valid = true
+		value.null = false
 	}
+	return value
 }
 
 func (value *stringValue) IsValid() bool {
-	return value.valid
+	return !value.null
 }
 
 func (value *stringValue) Compare(to Value) int {
@@ -53,8 +56,8 @@ func (value *stringValue) Clone() Value {
 }
 
 func (value *stringValue) String() string {
-	if value.valid {
-		return value.val
+	if value.null {
+		return nullValueStr
 	}
-	return nullValueStr
+	return value.val
 }

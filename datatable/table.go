@@ -2,95 +2,118 @@ package datatable
 
 import (
 	"github.com/datasweet/datatable/serie"
-	"github.com/pkg/errors"
 )
 
-type Table interface {
+type DataTable interface {
 	Name() string
-	NCols() int
-	NRows() int
+	NumCols() int
+	NumRows() int
+	Columns() []string
+	HiddenColumns() []string
+	Rows() []Row
+	Column(name string) Column
+	Row(at int) Row
+
+	// Mutate
+	AddColumn(name string, serie serie.Serie) error
+	AddExprColumn(name string, typ ExprType, formulae string) error
+	NewRow() Row
+	Append(r ...Row)
+	AppendRow(v ...interface{}) error
+	//Swap(colA, colB string) bool
+
+	// DeleteRow(at) bool
+	// UpdateRow(at, values...) bool
+	// DeleteColumn(name string)
+	// SortBy(colName ...string)
+
 }
 
+// New creates a new datatable
+func New(name string) DataTable {
+	return &table{name: name}
+}
+
+// table is our main struct
 type table struct {
 	name  string
-	cols  []serie.Serie
+	cols  []*column
 	nrows int
-	cuid  int
 	dirty bool
 }
 
-func NewTable(name string) Table {
-	return &table{
-		name:     name,
-		cuid:     1,
-		colnames: make(map[string]int),
-	}
-}
-
+// Name returns the datatable's name
 func (t *table) Name() string {
 	return t.name
 }
 
-func (t *table) NCols() int {
-	return len(t.cols)
-}
-
-func (t *table) NRows() int {
+// NumRows returns the number of rows in datatable
+func (t *table) NumRows() int {
 	return t.nrows
 }
 
-func (t *table) AddColumn(name string, s serie.Serie) error {
-	if _, ok := t.colnames[name]; ok {
-		return errors.Errorf("column '%s' already exists", name)
-	}
+// NumCols returns the number of visible columns in datatable
+func (t *table) NumCols() int {
+	return len(t.Columns())
+}
 
-	if s == nil {
-		return errors.New("serie prodived id nil")
-	}
-
-	if s.Error() != nil {
-		return errors.New("serie provided has error")
-	}
-
-	cpy := s.Clone()
-
-	l := cpy.Len()
-
-	// adjust size
-	if l < t.nrows {
-		for i := l; i < t.nrows; i++ {
-			cpy.Append(nil)
-		}
-	} else {
-		for _, col := range t.cols {
-			// create nils values
-			for i := t.nrows; i < l; i++ {
-				col.Append(nil)
-			}
+// Columns returns the visible column names in datatable
+func (t *table) Columns() []string {
+	var cols []string
+	for _, col := range t.cols {
+		if col.IsVisible() {
+			cols = append(cols, col.Name())
 		}
 	}
+	return cols
+}
 
-	t.cols = append(t.cols, cpy)
-	t.colnames[name] = len(t.cols) - 1
-	t.nrows = cpy.Len()
-	t.dirty = true
+// HiddenColumns returns the hidden column names in datatable
+func (t *table) HiddenColumns() []string {
+	var cols []string
+	for _, col := range t.cols {
+		if !col.IsVisible() {
+			cols = append(cols, col.Name())
+		}
+	}
+	return cols
+}
 
+// Column gets the column with name
+// returns nil if not found
+func (t *table) Column(name string) Column {
+	for _, col := range t.cols {
+		if col.Name() == name {
+			return col
+		}
+	}
 	return nil
 }
 
+// Rows returns the rows in datatable
+// Computes all expressions.
 func (t *table) Rows() []Row {
-	// Row: map[string]interface{}
-	// => we will the orders of cols.
-	rows := make([]Row, t.nrows)
-
-	for i := 0; i < t.nrows; i++ {
-		r := make(Row)
-		for name, pos := range t.colnames {
-			r[name] = t.cols[pos].Value(i)
+	if t.dirty {
+		if err := t.evaluateExpressions(); err != nil {
+			panic(err)
 		}
-		rows[i] = r
+	}
+
+	// visible columns
+	cols := make(map[string]int)
+	for i, col := range t.cols {
+		if col.IsVisible() {
+			cols[col.Name()] = i
+		}
+	}
+
+	rows := make([]Row, 0, t.nrows)
+	for i := 0; i < t.nrows; i++ {
+		r := make(Row, len(cols))
+		for name, pos := range cols {
+			r[name] = t.cols[pos].serie.Value(i)
+		}
+		rows = append(rows, r)
 	}
 	return rows
 }
-
-func (t *table) Rows()

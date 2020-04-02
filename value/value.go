@@ -2,7 +2,6 @@ package value
 
 import (
 	"fmt"
-	"reflect"
 )
 
 const nullValueStr = "#NULL!"
@@ -13,7 +12,7 @@ type Value interface {
 	Type() Type
 
 	// Set the value
-	Set(v interface{})
+	Set(v interface{}) Value
 
 	// Val to get the value
 	// nil if the value is not valid
@@ -34,20 +33,10 @@ type Value interface {
 
 type Type string
 
-type Builder func(v interface{}) Value
-
-type Predicate func(val Value) bool
-
-// TypeFromReflect to creates a value type from a reflect.Type
-func TypeFromReflect(typ reflect.Type) Type {
-	if typ == nil {
-		return Raw
-	}
-	return Type(typ.Name())
-}
-
 const (
 	Lt = -1
 	Eq = 0
 	Gt = 1
 )
+
+type Builder func(v ...interface{}) Value

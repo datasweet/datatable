@@ -1,23 +1,42 @@
 package datatable
 
 import (
-	"fmt"
-
 	"github.com/datasweet/datatable/serie"
+	"github.com/datasweet/datatable/value"
+	"github.com/datasweet/expr"
 )
 
+type ColumnOptions struct {
+	Hidden bool
+}
+
+type Column interface {
+	Name() string
+	Type() value.Type
+	IsVisible() bool
+	IsComputed() bool
+}
+
 type column struct {
-	name   string
-	typ    string
-	hidden bool
-	serie.Serie
+	name     string
+	hidden   bool
+	formulae string
+	expr     expr.Node
+	serie    serie.Serie
 }
 
-func main() {
-	c := &column{}
-	Sum(c)
+func (c *column) Name() string {
+	return c.name
 }
 
-func Sum(s serie.Serie) {
-	fmt.Println(s.Error())
+func (c *column) Type() value.Type {
+	return c.serie.Type()
+}
+
+func (c *column) IsVisible() bool {
+	return !c.hidden
+}
+
+func (c *column) IsComputed() bool {
+	return len(c.formulae) > 0
 }

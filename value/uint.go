@@ -6,114 +6,135 @@ import (
 	"github.com/datasweet/cast"
 )
 
-const Uint8 = Type("uint8")
-const Uint16 = Type("uint16")
-const Uint32 = Type("uint32")
-const Uint64 = Type("uint64")
-const Uint = Type("uint")
+const Uint8Type = Type("uint8")
+const Uint16Type = Type("uint16")
+const Uint32Type = Type("uint32")
+const Uint64Type = Type("uint64")
+const UintType = Type("uint")
 
 type uintValue struct {
 	bitSize int
-	val     *uint64
+	val     uint64
+	null    bool
 }
 
-func NewUint(v interface{}) Value {
-	value := &uintValue{}
-	value.Set(v)
+func newUint(bitSize int, v ...interface{}) Value {
+	value := &uintValue{bitSize: bitSize}
+	if len(v) == 1 {
+		value.Set(v[0])
+	}
 	return value
 }
 
-func NewUint64(v interface{}) Value {
-	value := &uintValue{bitSize: 64}
-	value.Set(v)
-	return value
+// Uint to create a new uint value
+// Uint() will create the default value, ie "0"
+// Uint(v) will parse the v value as uint, returns nil if error
+func Uint(v ...interface{}) Value {
+	return newUint(0, v...)
 }
 
-func NewUint32(v interface{}) Value {
-	value := &uintValue{bitSize: 32}
-	value.Set(v)
-	return value
+// Uint64 to create a new uint64 value
+// Uint64() will create the default value, ie "0"
+// Uint64(v) will parse the v value as uint64, returns nil if error
+func Uint64(v ...interface{}) Value {
+	return newUint(64, v...)
 }
 
-func NewUint16(v interface{}) Value {
-	value := &uintValue{bitSize: 16}
-	value.Set(v)
-	return value
+// Uint32 to create a new uint32 value
+// Uint32() will create the default value, ie "0"
+// Uint32(v) will parse the v value as uint32, returns nil if error
+func Uint32(v ...interface{}) Value {
+	return newUint(32, v...)
 }
 
-func NewUint8(v interface{}) Value {
-	value := &uintValue{bitSize: 8}
-	value.Set(v)
-	return value
+// Uint16 to create a new uint16 value
+// Uint16() will create the default value, ie "0"
+// Uint16(v) will parse the v value as uint16, returns nil if error
+func Uint16(v ...interface{}) Value {
+	return newUint(16, v...)
+}
+
+// Uint8 to create a new uint8 value
+// Uint8() will create the default value, ie "0"
+// Uint8(v) will parse the v value as uint8, returns nil if error
+func Uint8(v ...interface{}) Value {
+	return newUint(8, v...)
 }
 
 func (value *uintValue) Type() Type {
 	switch value.bitSize {
 	default:
-		return Uint
+		return UintType
 	case 64:
-		return Uint64
+		return Uint64Type
 	case 32:
-		return Uint32
+		return Uint32Type
 	case 16:
-		return Uint16
+		return Uint16Type
 	case 8:
-		return Uint8
+		return Uint8Type
 	}
 }
 
 func (value *uintValue) Val() interface{} {
-	if value.val == nil {
+	if value.null {
 		return nil
 	}
 	switch value.bitSize {
 	default:
-		return uint(*value.val)
+		return uint(value.val)
 	case 64:
-		return *value.val
+		return value.val
 	case 32:
-		return uint32(*value.val)
+		return uint32(value.val)
 	case 16:
-		return uint16(*value.val)
+		return uint16(value.val)
 	case 8:
-		return uint8(*value.val)
+		return uint8(value.val)
 	}
 }
 
-func (value *uintValue) Set(v interface{}) {
-	value.val = nil
+func (value *uintValue) Set(v interface{}) Value {
+	value.val = 0
+	value.null = true
 
 	if casted, ok := cast.AsUint(v); ok {
 		switch value.bitSize {
 		default:
 			if uint64(uint(casted)) == casted {
-				value.val = &casted
+				value.val = casted
+				value.null = false
 			}
 		case 64:
-			value.val = &casted
+			value.val = casted
+			value.null = false
 		case 32:
 			if uint64(uint32(casted)) == casted {
-				value.val = &casted
+				value.val = casted
+				value.null = false
 			}
 		case 16:
 			if uint64(uint16(casted)) == casted {
-				value.val = &casted
+				value.val = casted
+				value.null = false
 			}
 		case 8:
 			if uint64(uint8(casted)) == casted {
-				value.val = &casted
+				value.val = casted
+				value.null = false
 			}
 		}
 	}
+	return value
 }
 
 func (value *uintValue) IsValid() bool {
-	return value.val != nil
+	return !value.null
 }
 
 // Compare the current 'value' 'to' an other value
 // returns -1 if value < to, 0 if value == to, 1 if value > to
-// nil | not a uint < value
+// nil | not a int < value
 func (value *uintValue) Compare(to Value) int {
 	if to == nil {
 		return Gt
@@ -122,23 +143,21 @@ func (value *uintValue) Compare(to Value) int {
 	iv, ok := to.(*uintValue)
 	if !ok {
 		// try to convert
-		iv = NewUint64(to.Val()).(*uintValue)
+		iv = Uint64(to.Val()).(*uintValue)
 	}
 
-	if iv.val == nil {
-		if value.val == nil {
+	if iv.null {
+		if value.null {
 			return Eq
 		}
 		return Gt
 	}
 
-	a, b := *value.val, *iv.val
-
-	if a == b {
+	if value.val == iv.val {
 		return Eq
 	}
 
-	if a > b {
+	if value.val > iv.val {
 		return Gt
 	}
 
@@ -146,20 +165,14 @@ func (value *uintValue) Compare(to Value) int {
 }
 
 func (value *uintValue) Clone() Value {
-	var cpy *uint64
-	if value.val != nil {
-		cpy = new(uint64)
-		*cpy = *value.val
-	}
-	return &uintValue{
-		val:     cpy,
-		bitSize: value.bitSize,
-	}
+	var cpy uintValue
+	cpy = *value
+	return &cpy
 }
 
 func (value *uintValue) String() string {
-	if value.val == nil {
+	if value.null {
 		return nullValueStr
 	}
-	return strconv.FormatUint(*value.val, 10)
+	return strconv.FormatUint(value.val, 10)
 }

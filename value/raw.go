@@ -5,39 +5,50 @@ import (
 	"reflect"
 )
 
-const Raw = Type("raw")
+const RawType = Type("raw")
 
 type rawValue struct {
-	vtyp  Type
-	typ   reflect.Type
-	val   interface{}
-	valid bool
+	vtyp Type
+	typ  reflect.Type
+	val  interface{}
+	null bool
 }
 
-// NewRaw to create a new 'raw' value
-func NewRaw(v interface{}, typ interface{}) Value {
+// Raw to create a new 'raw' value
+func Raw(v interface{}, typ interface{}) Value {
 	value := &rawValue{typ: reflect.TypeOf(typ)}
 	value.vtyp = TypeFromReflect(value.typ)
 	value.Set(v)
 	return value
 }
 
+// TypeFromReflect to creates a value type from a reflect.Type
+func TypeFromReflect(typ reflect.Type) Type {
+	if typ == nil {
+		return RawType
+	}
+	return Type(typ.Name())
+}
+
 func (value *rawValue) Type() Type {
 	return value.vtyp
 }
 
-func (value *rawValue) Set(v interface{}) {
-	value.val = v
-	value.valid = false
+func (value *rawValue) Set(v interface{}) Value {
+	value.val = nil
+	value.null = true
 	if value.typ == nil {
-		value.valid = true
-	} else if v != nil {
-		value.valid = reflect.TypeOf(v).ConvertibleTo(value.typ)
+		value.val = v
+		value.null = false
+	} else if v != nil && reflect.TypeOf(v).ConvertibleTo(value.typ) {
+		value.val = v
+		value.null = false
 	}
 
-	if !value.valid {
+	if value.null {
 		value.val = nil
 	}
+	return value
 }
 
 func (value *rawValue) Val() interface{} {
@@ -45,7 +56,7 @@ func (value *rawValue) Val() interface{} {
 }
 
 func (value *rawValue) IsValid() bool {
-	return value.valid
+	return !value.null
 }
 
 func (value *rawValue) Compare(to Value) int {
@@ -60,8 +71,8 @@ func (value *rawValue) Clone() Value {
 }
 
 func (value *rawValue) String() string {
-	if value.valid {
-		return fmt.Sprintf("%v", value.val)
+	if value.null {
+		return nullValueStr
 	}
-	return nullValueStr
+	return fmt.Sprintf("%v", value.val)
 }

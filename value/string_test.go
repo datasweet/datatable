@@ -8,8 +8,8 @@ import (
 )
 
 func TestString(t *testing.T) {
-	val := value.NewString(1)
-	assert.Equal(t, value.String, val.Type())
+	val := value.String(1)
+	assert.Equal(t, value.StringType, val.Type())
 	assert.True(t, val.IsValid())
 	assert.Equal(t, "1", val.Val())
 
@@ -23,16 +23,16 @@ func TestString(t *testing.T) {
 }
 
 func TestCloneString(t *testing.T) {
-	val := value.NewString(1)
+	val := value.String(1)
 	assert.NotNil(t, val)
-	assert.Equal(t, value.String, val.Type())
+	assert.Equal(t, value.StringType, val.Type())
 	assert.True(t, val.IsValid())
 	assert.Equal(t, "1", val.Val())
 
 	cpy := val.Clone()
 	assert.NotNil(t, cpy)
 	assert.NotSame(t, val, cpy)
-	assert.Equal(t, value.String, cpy.Type())
+	assert.Equal(t, value.StringType, cpy.Type())
 	assert.True(t, cpy.IsValid())
 	assert.Equal(t, "1", cpy.Val())
 }

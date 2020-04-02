@@ -67,3 +67,41 @@ func (s *serie) Delete(at int) {
 	s.values[len(s.values)-1] = nil
 	s.values = s.values[:len(s.values)-1]
 }
+
+// Grow the serie with size
+func (s *serie) Grow(size int) {
+	if size < 0 {
+		s.err = errors.Errorf("grow: size '%d' must be > 0", size)
+		return
+	}
+	if size == 0 {
+		return
+	}
+	for i := 0; i < size; i++ {
+		s.values = append(s.values, s.builder())
+	}
+}
+
+func (s *serie) Shrink(size int) {
+	if s.err != nil {
+		return
+	}
+	if size < 0 {
+		s.err = errors.Errorf("shrink: size '%d' must be > 0", size)
+		return
+	}
+	if size == 0 {
+		return
+	}
+	len := len(s.values)
+	if size > len {
+		s.err = errors.Errorf("shrink: size '%d' must be < length '%d'", size, len)
+		return
+	}
+	from := len - size
+	to := len
+	for i := size; i < to; i++ {
+		s.values[i] = nil
+	}
+	s.values = s.values[:from]
+}

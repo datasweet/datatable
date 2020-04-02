@@ -4,48 +4,58 @@ import (
 	"github.com/datasweet/cast"
 )
 
-const Bool = Type("bool")
+const BoolType = Type("bool")
 const trueStr = "true"
 const falseStr = "false"
 
 type boolValue struct {
-	val *bool
+	val  bool
+	null bool
 }
 
-func NewBool(v interface{}) Value {
-	value := &boolValue{}
-	value.Set(v)
-	return value
+// Bool to create a new bool value
+// Bool() will create the default value, ie "false"
+// Bool(v) will parse the v value as bool
+func Bool(v ...interface{}) Value {
+	bv := &boolValue{}
+	if len(v) == 1 {
+		bv.Set(v[0])
+	}
+	return bv
 }
 
 func (value *boolValue) Type() Type {
-	return Bool
+	return BoolType
 }
 
 func (value *boolValue) Val() interface{} {
-	if value.val == nil {
+	if value.null {
 		return nil
 	}
-	return *value.val
+	return value.val
 }
 
-func (value *boolValue) Set(v interface{}) {
-	value.val = nil
+func (value *boolValue) Set(v interface{}) Value {
+	value.val = false
+	value.null = true
 	if v == nil {
-		return
+		return value
 	}
 	switch val := v.(type) {
 	case *boolValue:
 		value.val = val.val
+		value.null = false
 	default:
 		if casted, ok := cast.AsBool(v); ok {
-			value.val = &casted
+			value.val = casted
+			value.null = false
 		}
 	}
+	return value
 }
 
 func (value *boolValue) IsValid() bool {
-	return value.val != nil
+	return !value.null
 }
 
 // Compare the current 'value' 'to' an other value
@@ -59,23 +69,21 @@ func (value *boolValue) Compare(to Value) int {
 	bv, ok := to.(*boolValue)
 	if !ok {
 		// try to convert
-		bv = NewBool(to.Val()).(*boolValue)
+		bv = Bool(to.Val()).(*boolValue)
 	}
 
-	if bv.val == nil {
-		if value.val == nil {
+	if bv.null {
+		if value.null {
 			return Eq
 		}
 		return Gt
 	}
 
-	a, b := *value.val, *bv.val
-
-	if a == b {
+	if value.val == bv.val {
 		return Eq
 	}
 
-	if a {
+	if value.val {
 		return Gt
 	}
 
@@ -83,21 +91,17 @@ func (value *boolValue) Compare(to Value) int {
 }
 
 func (value *boolValue) Clone() Value {
-	var cpy *bool
-	if value.val != nil {
-		cpy = new(bool)
-		*cpy = *value.val
-	}
 	return &boolValue{
-		val: cpy,
+		val:  value.val,
+		null: value.null,
 	}
 }
 
 func (value *boolValue) String() string {
-	if value.val == nil {
+	if value.null {
 		return nullValueStr
 	}
-	if *value.val {
+	if value.val {
 		return trueStr
 	}
 	return falseStr

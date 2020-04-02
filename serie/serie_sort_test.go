@@ -32,7 +32,7 @@ func TestSortAsc(t *testing.T) {
 		69, 90, 74, 25, 64,
 		37, 63, 61, 85, 12,
 	}
-	s := serie.NewInt(random...)
+	s := serie.Int(random...)
 	assert.NotNil(t, s)
 	assert.Equal(t, 100, s.Len())
 	assert.Equal(t, random, s.Values())

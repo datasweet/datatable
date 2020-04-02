@@ -9,23 +9,31 @@ import (
 // Row contains a row relative to columns
 type Row map[string]interface{}
 
+// type Row interface {
+// 	Len() int
+// 	Cell(name string) interface{}
+// 	Set(name string, value interface{}) Row
+// 	Hash() uint64
+// }
+
+// type row struct {
+// 	cells map[string]value.Value
+// }
+
 // Set cell
 func (r Row) Set(k string, v interface{}) Row {
-	// Check colName exists
-	if _, ok := r[k]; ok {
-		r[k] = v
-	}
+	r[k] = v
 	return r
 }
 
-// Get cell
-func (r Row) Get(k string) interface{} {
-	// Check colName exists
-	if v, ok := r[k]; ok {
-		return v
-	}
-	return nil
-}
+// // Get cell
+// func (r Row) Get(k string) interface{} {
+// 	// Check colName exists
+// 	if v, ok := r[k]; ok {
+// 		return v
+// 	}
+// 	return nil
+// }
 
 // Hash computes the hash code from this datarow
 // can be used to filter the table (distinct rows)

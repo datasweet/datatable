@@ -2,10 +2,10 @@ package serie
 
 import (
 	"fmt"
-	"reflect"
 	"sort"
 
 	"github.com/datasweet/datatable/value"
+	"github.com/pkg/errors"
 )
 
 // Serie describe a serie
@@ -21,14 +21,16 @@ type Serie interface {
 	Insert(at int, v ...interface{})
 	Update(at int, v interface{})
 	Delete(at int)
+	Grow(size int)
+	Shrink(size int)
 
 	// Select
 	Head(size int) Serie
 	Tail(size int) Serie
 	Subset(at, size int) Serie
 	Pick(at ...int) Serie
-	FindRows(where value.Predicate) []int
-	Filter(where value.Predicate) Serie
+	FindRows(where Predicate) []int
+	Filter(where Predicate) Serie
 	Distinct() Serie
 
 	// Clone
@@ -44,94 +46,23 @@ type Serie interface {
 	fmt.Stringer
 }
 
-func NewBool(v ...interface{}) Serie {
-	s := newSerie(value.Bool, value.NewBool)
-	s.Append(v...)
-	return s
-}
+type Predicate func(val value.Value) bool
 
-func NewInt(v ...interface{}) Serie {
-	s := newSerie(value.Int, value.NewInt)
-	s.Append(v...)
-	return s
-}
-
-func NewInt64(v ...interface{}) Serie {
-	s := newSerie(value.Int64, value.NewInt64)
-	s.Append(v...)
-	return s
-}
-
-func NewInt32(v ...interface{}) Serie {
-	s := newSerie(value.Int32, value.NewInt32)
-	s.Append(v...)
-	return s
-}
-
-func NewInt16(v ...interface{}) Serie {
-	s := newSerie(value.Int16, value.NewInt16)
-	s.Append(v...)
-	return s
-}
-
-func NewInt8(v ...interface{}) Serie {
-	s := newSerie(value.Int8, value.NewInt8)
-	s.Append(v...)
-	return s
-}
-
-func NewUint(v ...interface{}) Serie {
-	s := newSerie(value.Uint, value.NewUint)
-	s.Append(v...)
-	return s
-}
-
-func NewUint64(v ...interface{}) Serie {
-	s := newSerie(value.Uint64, value.NewUint64)
-	s.Append(v...)
-	return s
-}
-
-func NewUint32(v ...interface{}) Serie {
-	s := newSerie(value.Uint32, value.NewUint32)
-	s.Append(v...)
-	return s
-}
-
-func NewUint16(v ...interface{}) Serie {
-	s := newSerie(value.Uint16, value.NewUint16)
-	s.Append(v...)
-	return s
-}
-
-func NewUint8(v ...interface{}) Serie {
-	s := newSerie(value.Uint8, value.NewUint8)
-	s.Append(v...)
-	return s
-}
-
-func NewString(v ...interface{}) Serie {
-	s := newSerie(value.String, value.NewString)
-	s.Append(v...)
-	return s
-}
-
-func NewRaw(v ...interface{}) Serie {
-	builder := func(v interface{}) value.Value {
-		return value.NewRaw(v, nil)
+// New to create a new serie
+func New(builder value.Builder, v ...interface{}) Serie {
+	s := &serie{
+		builder: builder,
 	}
-	s := newSerie(value.Raw, builder)
-	s.Append(v...)
-	return s
-}
-
-func NewGeneric(concretType interface{}, v ...interface{}) Serie {
-	ctyp := reflect.TypeOf(concretType)
-	builder := func(v interface{}) value.Value {
-		return value.NewRaw(v, ctyp)
+	if builder == nil {
+		s.typ = value.Type("?")
+		s.err = errors.New("value builder is nil")
+	} else {
+		s.typ = builder().Type()
 	}
-	s := newSerie(value.TypeFromReflect(ctyp), builder)
-	s.Append(v...)
+
+	if len(v) > 0 {
+		s.Append(v...)
+	}
 	return s
 }
 
@@ -141,13 +72,6 @@ type serie struct {
 	builder value.Builder
 	values  []value.Value
 	err     error
-}
-
-func newSerie(typ value.Type, builder value.Builder) Serie {
-	return &serie{
-		typ:     typ,
-		builder: builder,
-	}
 }
 
 func (s *serie) Type() value.Type {
