@@ -1,6 +1,10 @@
 package datatable
 
 import (
+	"fmt"
+	"io"
+	"strings"
+
 	"github.com/datasweet/datatable/serie"
 )
 
@@ -27,6 +31,9 @@ type DataTable interface {
 	// DeleteColumn(name string)
 	// SortBy(colName ...string)
 
+	// Print
+	Print(writer io.Writer, opt ...PrintOption)
+	fmt.Stringer
 }
 
 // New creates a new datatable
@@ -90,6 +97,34 @@ func (t *table) Column(name string) Column {
 	return nil
 }
 
+// Records returns the rows in datatable as string
+// Computes all expressions.
+func (t *table) Records() [][]string {
+	if t.dirty {
+		if err := t.evaluateExpressions(); err != nil {
+			panic(err)
+		}
+	}
+
+	// visible columns
+	var cols []int
+	for i, col := range t.cols {
+		if col.IsVisible() {
+			cols = append(cols, i)
+		}
+	}
+
+	rows := make([][]string, 0, t.nrows)
+	for i := 0; i < t.nrows; i++ {
+		r := make([]string, 0, len(cols))
+		for pos := range cols {
+			r = append(r, t.cols[pos].serie.Value(i).String())
+		}
+		rows = append(rows, r)
+	}
+	return rows
+}
+
 // Rows returns the rows in datatable
 // Computes all expressions.
 func (t *table) Rows() []Row {
@@ -111,9 +146,15 @@ func (t *table) Rows() []Row {
 	for i := 0; i < t.nrows; i++ {
 		r := make(Row, len(cols))
 		for name, pos := range cols {
-			r[name] = t.cols[pos].serie.Value(i)
+			r[name] = t.cols[pos].serie.Value(i).Val()
 		}
 		rows = append(rows, r)
 	}
 	return rows
+}
+
+func (t *table) String() string {
+	var sb strings.Builder
+	t.Print(&sb)
+	return sb.String()
 }

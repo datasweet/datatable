@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-const nullValueStr = "#NULL!"
+const nullValueStr = "null"
 
 // Value is a value in a serie
 type Value interface {

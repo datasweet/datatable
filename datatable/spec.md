@@ -14,4 +14,20 @@
   - time
   - serie....
 
+  [ N°commande, Produit, Prix ]
+  A, toto, 10
+  A, tata, 15
+  A, titi , 347
+  B, lionel, 3568
 
+
+[N° commande, Produits]
+A, [{nom, prix}, {nom, prix}]
+
+=> flatten(table)
+
+
+A, toto, 10
+A, tata, 15
+A, titi , 347
+B, lionel, 3568

@@ -1,7 +1,6 @@
 package serie_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/datasweet/datatable/serie"
@@ -23,9 +22,7 @@ func NewSerieInt(t *testing.T) serie.Serie {
 		69, 90, 74, 25, 64, 37, 63, 61, 85, 12,
 	}
 	s := serie.Int(values...)
-	assert.NotNil(t, s)
-	assert.Equal(t, 100, s.Len())
-	assert.Equal(t, values, s.Values())
+	assertSerieEq(t, s, values...)
 	return s
 }
 
@@ -33,14 +30,22 @@ func assertSerieIntEq(t *testing.T, s serie.Serie, val ...int) {
 	assert.NotNil(t, s)
 	assert.Equal(t, len(val), s.Len())
 	for i, v := range s.Values() {
-		assert.Equalf(t, val[i], v, "At index %d", i)
+		assert.Equalf(t, val[i], v.Val(), "At index %d", i)
 	}
 }
 
-func assertSerieEq(t *testing.T, s serie.Serie, val ...string) {
+func assertSerieEq(t *testing.T, s serie.Serie, val ...interface{}) {
 	assert.NotNil(t, s)
-	assert.Equal(t,
-		strings.TrimSpace(strings.Join(val, " ")),
-		strings.TrimSpace(s.Print(serie.PrintType(false), serie.PrintRowNumber(false), serie.PrintValueSeparator(" "))),
-	)
+	assert.Equal(t, len(val), s.Len())
+	for i, v := range s.Values() {
+		assert.Equalf(t, val[i], v.Val(), "At index %d", i)
+	}
 }
+
+// func assertSerieEq(t *testing.T, s serie.Serie, val ...string) {
+// 	assert.NotNil(t, s)
+// 	assert.Equal(t,
+// 		strings.TrimSpace(strings.Join(val, " ")),
+// 		strings.TrimSpace(s.Print(serie.PrintType(false), serie.PrintRowNumber(false), serie.PrintValueSeparator(" "))),
+// 	)
+// }

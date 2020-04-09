@@ -26,14 +26,14 @@ func (r Row) Set(k string, v interface{}) Row {
 	return r
 }
 
-// // Get cell
-// func (r Row) Get(k string) interface{} {
-// 	// Check colName exists
-// 	if v, ok := r[k]; ok {
-// 		return v
-// 	}
-// 	return nil
-// }
+// Get cell
+func (r Row) Get(k string) interface{} {
+	// Check colName exists
+	if v, ok := r[k]; ok {
+		return v
+	}
+	return nil
+}
 
 // Hash computes the hash code from this datarow
 // can be used to filter the table (distinct rows)

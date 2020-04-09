@@ -4,7 +4,7 @@ import "testing"
 
 func TestClone(t *testing.T) {
 	s := NewSerieInt(t)
-	assertSerieIntEq(t, s.Clone(),
+	assertSerieEq(t, s.Clone(),
 		31, 23, 98, 3, 59, 67, 5, 5, 87, 18,
 		3, 88, 7, 63, 29, 62, 37, 66, 87, 26,
 		24, 5, 62, 75, 69, 56, 15, 59, 40, 34,

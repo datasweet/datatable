@@ -13,7 +13,7 @@ func TestGrowZero(t *testing.T) {
 	s.Grow(10)
 	assert.NoError(t, s.Error())
 	assert.Equal(t, 110, s.Len())
-	assert.Equal(t, []interface{}{
+	assertSerieEq(t, s,
 		31, 23, 98, 3, 59, 67, 5, 5, 87, 18,
 		3, 88, 7, 63, 29, 62, 37, 66, 87, 26,
 		24, 5, 62, 75, 69, 56, 15, 59, 40, 34,
@@ -25,7 +25,7 @@ func TestGrowZero(t *testing.T) {
 		48, 47, 74, 98, 76, 88, 18, 100, 69, 57,
 		69, 90, 74, 25, 64, 37, 63, 61, 85, 12,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	}, s.Values())
+	)
 }
 
 func TestShrink(t *testing.T) {
@@ -35,12 +35,12 @@ func TestShrink(t *testing.T) {
 	s.Shrink(90)
 	assert.NoError(t, s.Error())
 	assert.Equal(t, 10, s.Len())
-	assert.Equal(t, []interface{}{31, 23, 98, 3, 59, 67, 5, 5, 87, 18}, s.Values())
+	assertSerieEq(t, s, 31, 23, 98, 3, 59, 67, 5, 5, 87, 18)
 
 	s.Shrink(25)
 	assert.Error(t, s.Error())
 	assert.Equal(t, 10, s.Len())
-	assert.Equal(t, []interface{}{31, 23, 98, 3, 59, 67, 5, 5, 87, 18}, s.Values())
+	assertSerieEq(t, s, 31, 23, 98, 3, 59, 67, 5, 5, 87, 18)
 
 	// s.Shrink(10)
 	// assert.NoError(t, s.Error())

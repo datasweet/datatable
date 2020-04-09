@@ -8,6 +8,7 @@ import (
 
 type ColumnOptions struct {
 	Hidden bool
+	Format string
 }
 
 type Column interface {

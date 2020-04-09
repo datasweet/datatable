@@ -24,7 +24,11 @@ func (t *table) evaluateExpressions() error {
 	params := make(map[string][]interface{}, len(t.cols))
 	for _, pos := range cols {
 		col := t.cols[pos]
-		params[col.name] = col.serie.Values()
+		values := make([]interface{}, 0, col.serie.Len())
+		for _, v := range col.serie.Values() {
+			values = append(values, v.Val())
+		}
+		params[col.name] = values
 	}
 
 	// Evaluate
@@ -62,8 +66,11 @@ func (t *table) evaluateExpressions() error {
 		}
 
 		// update dependency
-		params[name] = col.serie.Values()
-
+		values := make([]interface{}, 0, col.serie.Len())
+		for _, v := range col.serie.Values() {
+			values = append(values, v.Val())
+		}
+		params[name] = values
 	}
 
 	t.dirty = false

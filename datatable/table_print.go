@@ -1,6 +1,9 @@
 package datatable
 
 import (
+	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
@@ -39,7 +42,7 @@ func PrintMaxRows(v int) PrintOption {
 	}
 }
 
-func (t *table) Print(opt ...PrintOption) string {
+func (t *table) Print(writer io.Writer, opt ...PrintOption) {
 	options := PrintOptions{
 		ColumnName: true,
 		ColumnType: true,
@@ -51,8 +54,11 @@ func (t *table) Print(opt ...PrintOption) string {
 		o(&options)
 	}
 
-	var sb strings.Builder
-	tw := tablewriter.NewWriter(&sb)
+	if writer == nil {
+		writer = os.Stdout
+	}
+
+	tw := tablewriter.NewWriter(writer)
 	tw.SetAutoWrapText(false)
 	tw.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	tw.SetAlignment(tablewriter.ALIGN_LEFT)
@@ -64,13 +70,22 @@ func (t *table) Print(opt ...PrintOption) string {
 	tw.SetTablePadding("\t")
 	tw.SetNoWhiteSpace(true)
 
-	// if options.ColumnName || options.ColumnType {
+	if options.ColumnName || options.ColumnType {
+		headers := make([]string, 0, len(t.cols))
 
-	// table.SetHeader([]string{"Name", "Status", "Role", "Version"})
-	// }
+		for _, col := range t.cols {
+			var h []string
+			if options.ColumnName {
+				h = append(h, col.Name())
+			}
+			if options.ColumnType {
+				h = append(h, fmt.Sprintf("<%s>", string(col.serie.Type())))
+			}
+			headers = append(headers, strings.Join(h, " "))
+		}
 
-	//tw.SetHeader([]string{"Name", "Sign", "Rating"})
-
+		tw.SetHeader(headers)
+	}
+	tw.AppendBulk(t.Records())
 	tw.Render()
-	return sb.String()
 }

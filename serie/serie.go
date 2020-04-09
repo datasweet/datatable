@@ -12,8 +12,8 @@ import (
 type Serie interface {
 	Type() value.Type
 	Error() error
-	Value(at int) interface{}
-	Values() []interface{}
+	Value(at int) value.Value
+	Values() []value.Value
 
 	// Mutate
 	Append(v ...interface{})
@@ -82,20 +82,16 @@ func (s *serie) Error() error {
 	return s.err
 }
 
-func (s *serie) Value(at int) interface{} {
+func (s *serie) Value(at int) value.Value {
 	if s.err != nil {
 		return nil
 	}
 	if at < 0 || at >= len(s.values) {
 		return nil
 	}
-	return s.values[at].Val()
+	return s.values[at]
 }
 
-func (s *serie) Values() []interface{} {
-	values := make([]interface{}, 0, len(s.values))
-	for _, v := range s.values {
-		values = append(values, v.Val())
-	}
-	return values
+func (s *serie) Values() []value.Value {
+	return s.values
 }
