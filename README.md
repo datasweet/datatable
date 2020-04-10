@@ -22,7 +22,7 @@ If you find a bug or want to request a feature, please create a [GitHub Issue](h
 ```
 This software is licensed under the Apache License, version 2 ("ALv2"), quoted below.
 
-Copyright 2017-2018 Datasweet <http://www.datasweet.fr>
+Copyright 2017-2020 Datasweet <http://www.datasweet.fr>
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
