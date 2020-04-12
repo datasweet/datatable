@@ -96,3 +96,8 @@ func Generic(concretType interface{}, v ...interface{}) Serie {
 	}
 	return New(builder, v...)
 }
+
+// Time to create a new time serie
+func Time(v ...interface{}) Serie {
+	return New(value.Time, v...)
+}

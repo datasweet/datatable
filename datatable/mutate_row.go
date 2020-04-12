@@ -4,15 +4,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ExprType uint8
-
-const (
-	ExprRaw ExprType = iota
-	ExprBool
-	ExprNumber
-	ExprString
-)
-
 func (t *DataTable) NewRow() Row {
 	r := make(Row)
 	return r
@@ -33,7 +24,8 @@ func (t *DataTable) Append(row ...Row) {
 				col.serie.Append(cell)
 				continue
 			}
-			col.serie.Grow(1)
+			//col.serie.Grow(1)
+			col.serie.Append(nil)
 		}
 		t.nrows++
 	}

@@ -1,7 +1,6 @@
 package datatable_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -26,7 +25,7 @@ func sampleForJoin() (*datatable.DataTable, *datatable.DataTable) {
 
 	orders := datatable.New("Orders")
 	orders.AddColumn("user_id", serie.Int(1, 1, 2, 3, 5))
-	orders.AddColumn("date_achat", serie.String("2013-01-23", "2013-02-14", "2013-02-17", "2013-02-21", "2013-03-02"))
+	orders.AddColumn("date_achat", serie.Time("2013-01-23", "2013-02-14", "2013-02-17", "2013-02-21", "2013-03-02"))
 	orders.AddColumn("num_facture", serie.String("A00103", "A00104", "A00105", "A00106", "A00107"))
 	orders.AddColumn("prix_total", serie.Float64(203.14, 124.00, 149.45, 235.35, 47.58))
 
@@ -92,14 +91,12 @@ func TestInnerJoin(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, dt)
 
-	fmt.Println(dt)
-
 	checkTable(t, dt,
 		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "2013-01-23" /*time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC)*/, "A00103", 203.14,
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "2013-02-14" /*time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC)*/, "A00104", 124.00,
-		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", "2013-02-17" /*time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC)*/, "A00105", 149.45,
-		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", "2013-02-21" /*time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC)*/, "A00106", 235.35,
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
 	)
 }
 
@@ -109,8 +106,6 @@ func TestLeftJoin(t *testing.T) {
 	dt, err := datatable.LeftJoin([]*datatable.DataTable{customers, orders}, datatable.On("[Customers].[id]", "[Orders].[user_id]"))
 	assert.NoError(t, err)
 	assert.NotNil(t, dt)
-
-	fmt.Println(dt)
 
 	checkTable(t, dt,
 		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
@@ -182,7 +177,7 @@ func TestJoinWithColumnName(t *testing.T) {
 	customers, orders := sampleForJoin()
 	assert.NoError(t, customers.RenameColumn("id", "ClientID"))
 
-	dt, err := datatable.InnerJoin([]*datatable.DataTable{customers, orders}, datatable.On("[Customers].[id]", "[Orders].[user_id]"))
+	dt, err := datatable.InnerJoin([]*datatable.DataTable{customers, orders}, datatable.On("[Customers].[ClientID]", "[Orders].[user_id]"))
 	assert.NoError(t, err)
 	assert.NotNil(t, dt)
 
