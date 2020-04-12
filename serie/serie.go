@@ -34,7 +34,7 @@ type Serie interface {
 	Distinct() Serie
 
 	// Clone
-	Clone() Serie
+	Clone(includeValues bool) Serie
 
 	// Sort
 	sort.Interface

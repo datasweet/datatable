@@ -1,48 +1,16 @@
 package datatable
 
 import (
-	"fmt"
-	"io"
 	"strings"
-
-	"github.com/datasweet/datatable/serie"
 )
 
-type DataTable interface {
-	Name() string
-	NumCols() int
-	NumRows() int
-	Columns() []string
-	HiddenColumns() []string
-	Rows() []Row
-	Column(name string) Column
-	Row(at int) Row
-
-	// Mutate
-	AddColumn(name string, serie serie.Serie) error
-	AddExprColumn(name string, typ ExprType, formulae string) error
-	NewRow() Row
-	Append(r ...Row)
-	AppendRow(v ...interface{}) error
-	//Swap(colA, colB string) bool
-
-	// DeleteRow(at) bool
-	// UpdateRow(at, values...) bool
-	// DeleteColumn(name string)
-	// SortBy(colName ...string)
-
-	// Print
-	Print(writer io.Writer, opt ...PrintOption)
-	fmt.Stringer
-}
-
 // New creates a new datatable
-func New(name string) DataTable {
-	return &table{name: name}
+func New(name string) *DataTable {
+	return &DataTable{name: name}
 }
 
 // table is our main struct
-type table struct {
+type DataTable struct {
 	name  string
 	cols  []*column
 	nrows int
@@ -50,22 +18,22 @@ type table struct {
 }
 
 // Name returns the datatable's name
-func (t *table) Name() string {
+func (t *DataTable) Name() string {
 	return t.name
 }
 
 // NumRows returns the number of rows in datatable
-func (t *table) NumRows() int {
+func (t *DataTable) NumRows() int {
 	return t.nrows
 }
 
 // NumCols returns the number of visible columns in datatable
-func (t *table) NumCols() int {
+func (t *DataTable) NumCols() int {
 	return len(t.Columns())
 }
 
 // Columns returns the visible column names in datatable
-func (t *table) Columns() []string {
+func (t *DataTable) Columns() []string {
 	var cols []string
 	for _, col := range t.cols {
 		if col.IsVisible() {
@@ -76,7 +44,7 @@ func (t *table) Columns() []string {
 }
 
 // HiddenColumns returns the hidden column names in datatable
-func (t *table) HiddenColumns() []string {
+func (t *DataTable) HiddenColumns() []string {
 	var cols []string
 	for _, col := range t.cols {
 		if !col.IsVisible() {
@@ -88,7 +56,7 @@ func (t *table) HiddenColumns() []string {
 
 // Column gets the column with name
 // returns nil if not found
-func (t *table) Column(name string) Column {
+func (t *DataTable) Column(name string) Column {
 	for _, col := range t.cols {
 		if col.Name() == name {
 			return col
@@ -99,7 +67,7 @@ func (t *table) Column(name string) Column {
 
 // Records returns the rows in datatable as string
 // Computes all expressions.
-func (t *table) Records() [][]string {
+func (t *DataTable) Records() [][]string {
 	if t.dirty {
 		if err := t.evaluateExpressions(); err != nil {
 			panic(err)
@@ -127,7 +95,7 @@ func (t *table) Records() [][]string {
 
 // Rows returns the rows in datatable
 // Computes all expressions.
-func (t *table) Rows() []Row {
+func (t *DataTable) Rows() []Row {
 	if t.dirty {
 		if err := t.evaluateExpressions(); err != nil {
 			panic(err)
@@ -153,7 +121,7 @@ func (t *table) Rows() []Row {
 	return rows
 }
 
-func (t *table) String() string {
+func (t *DataTable) String() string {
 	var sb strings.Builder
 	t.Print(&sb)
 	return sb.String()

@@ -23,13 +23,13 @@ func (s *serie) Less(i, j int) bool {
 }
 
 func (s *serie) SortAsc() Serie {
-	cpy := s.Clone()
+	cpy := s.Clone(true)
 	sort.Sort(cpy)
 	return cpy
 }
 
 func (s *serie) SortDesc() Serie {
-	cpy := s.Clone()
+	cpy := s.Clone(true)
 	sort.Sort(sort.Reverse(cpy))
 	return cpy
 }

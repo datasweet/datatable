@@ -42,7 +42,7 @@ func PrintMaxRows(v int) PrintOption {
 	}
 }
 
-func (t *table) Print(writer io.Writer, opt ...PrintOption) {
+func (t *DataTable) Print(writer io.Writer, opt ...PrintOption) {
 	options := PrintOptions{
 		ColumnName: true,
 		ColumnType: true,

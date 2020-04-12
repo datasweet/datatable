@@ -16,6 +16,7 @@ type Column interface {
 	Type() value.Type
 	IsVisible() bool
 	IsComputed() bool
+	Clone(includeValues bool) Column
 }
 
 type column struct {
@@ -40,4 +41,19 @@ func (c *column) IsVisible() bool {
 
 func (c *column) IsComputed() bool {
 	return len(c.formulae) > 0
+}
+
+func (c *column) Clone(includeValues bool) Column {
+	clone := &column{
+		name:     c.name,
+		hidden:   c.hidden,
+		formulae: c.formulae,
+		serie:    c.serie.Clone(includeValues),
+	}
+	if len(clone.formulae) > 0 {
+		if parsed, err := expr.Parse(clone.formulae); err != nil {
+			clone.expr = parsed
+		}
+	}
+	return clone
 }

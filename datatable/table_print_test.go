@@ -11,12 +11,12 @@ import (
 func TestPrint(t *testing.T) {
 	tb := datatable.New("test")
 	tb.AddColumn("champ", serie.String("Malzahar", "Xerath", "Teemo"))
-	tb.AddExprColumn("champion", datatable.ExprString, "upper(`champ`)")
+	tb.AddExprColumn("champion", serie.String(), "upper(`champ`)")
 	tb.AddColumn("win", serie.Int(10, 20, 666))
 	tb.AddColumn("loose", serie.Int(6, 5, 666))
-	tb.AddExprColumn("winRate", datatable.ExprString, "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
-	tb.AddExprColumn("sum", datatable.ExprNumber, "sum(`win`)")
-	tb.AddExprColumn("ok", datatable.ExprBool, "true")
+	tb.AddExprColumn("winRate", serie.String(), "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
+	tb.AddExprColumn("sum", serie.Int(), "sum(`win`)")
+	tb.AddExprColumn("ok", serie.Bool(), "true")
 
 	checkTable(t, tb,
 		"champ", "champion", "win", "loose", "winRate", "sum", "ok",

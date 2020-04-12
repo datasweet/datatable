@@ -4,8 +4,8 @@ import (
 	"github.com/datasweet/datatable/value"
 )
 
-func (s *serie) Clone() Serie {
-	return s.clone(true)
+func (s *serie) Clone(includeValues bool) Serie {
+	return s.clone(includeValues)
 }
 
 func (s *serie) clone(includeValues bool) *serie {

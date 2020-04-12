@@ -8,7 +8,7 @@ import (
 )
 
 // checkTable to check if a table contains cells
-func checkTable(t *testing.T, tb datatable.DataTable, cells ...interface{}) {
+func checkTable(t *testing.T, tb *datatable.DataTable, cells ...interface{}) {
 	ncols := tb.NumCols()
 	nrows := tb.NumRows()
 	assert.Len(t, cells, ncols*(nrows+1)) // + headers

@@ -3,7 +3,7 @@ package datatable
 import "github.com/pkg/errors"
 
 // evaluateExpressions to evaluate all columns with a binded expression
-func (t *table) evaluateExpressions() error {
+func (t *DataTable) evaluateExpressions() error {
 	var cols []int
 	var exprCols []int
 	for i, c := range t.cols {

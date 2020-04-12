@@ -1,9 +1,10 @@
 package datatable
 
-func (t *table) Row(at int) Row {
-	// if at < 0 || at >= len(t.rows) {
-	// 	return nil
-	// }
-	// return t.rows[at]
-	return nil
+// Row gets the row at index
+func (t *DataTable) Row(at int) Row {
+	r := make(Row, len(t.cols))
+	for _, col := range t.cols {
+		r[col.name] = col.serie.Value(at).Val()
+	}
+	return r
 }
