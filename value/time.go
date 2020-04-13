@@ -45,12 +45,6 @@ func (value *timeValue) Set(v interface{}) Value {
 	value.val = time.Time{}
 	value.null = true
 
-	if casted, ok := v.(time.Time); ok {
-		value.val = casted
-		value.null = false
-		return value
-	}
-
 	if casted, ok := cast.AsDatetime(v); ok {
 		value.val = casted
 		value.null = false
@@ -63,7 +57,35 @@ func (value *timeValue) IsValid() bool {
 	return !value.null
 }
 
+// Compare the current 'value' 'to' an other value
+// returns -1 if value < to, 0 if value == to, 1 if value > to
+// nil | not a Time < value
 func (value *timeValue) Compare(to Value) int {
+	if to == nil {
+		return Gt
+	}
+
+	tv, ok := to.(*timeValue)
+	if !ok {
+		// try to convert
+		tv = Time(to.Val()).(*timeValue)
+	}
+
+	if tv.null {
+		if value.null {
+			return Eq
+		}
+		return Gt
+	}
+
+	if value.val.Equal(tv.val) {
+		return Eq
+	}
+
+	if value.val.After(tv.val) {
+		return Gt
+	}
+
 	return Lt
 }
 
