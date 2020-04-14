@@ -290,14 +290,14 @@ func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 					row[cm[1]] = joinrow.Get(cm[0])
 				}
 				join.consumed[idx] = true
-				out.Append(row)
+				out.append(row, false)
 			}
 		} else if j.mode != innerJoin {
 			row := make(Row, len(refrow))
 			for _, cm := range ref.cmapper {
 				row[cm[1]] = refrow.Get(cm[0])
 			}
-			out.Append(row)
+			out.append(row, false)
 		}
 	}
 
@@ -311,7 +311,7 @@ func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 			for _, cm := range join.cmapper {
 				row[cm[1]] = joinrow.Get(cm[0])
 			}
-			out.Append(row)
+			out.append(row, false)
 		}
 	}
 

@@ -24,11 +24,34 @@ func (t *DataTable) Append(row ...Row) {
 				col.serie.Append(cell)
 				continue
 			}
-			//col.serie.Grow(1)
-			col.serie.Append(nil)
+			col.serie.Grow(1)
+			//col.serie.Append(nil)
 		}
 		t.nrows++
 	}
+	t.dirty = true
+}
+
+// Append row to the table
+func (t *DataTable) append(row Row, useZero bool) {
+	for _, col := range t.cols {
+		if col.IsComputed() {
+			col.serie.Append(nil)
+			continue
+		}
+		if row != nil {
+			if cell, ok := row[col.name]; ok {
+				col.serie.Append(cell)
+				continue
+			}
+		}
+		if useZero {
+			col.serie.Grow(1)
+			continue
+		}
+		col.serie.Append(nil)
+	}
+	t.nrows++
 	t.dirty = true
 }
 

@@ -98,9 +98,9 @@ func TestExprColumn(t *testing.T) {
 
 	checkTable(t, tb,
 		"champ", "champion", "win", "loose", "winRate", "sum", "ok",
-		"Malzahar", "MALZAHAR", 10, 6, "62.5 %", 696.0, true,
-		"Xerath", "XERATH", 20, 5, "80 %", 696.0, true,
-		"Teemo", "TEEMO", 666, 666, "50 %", 696.0, true,
+		"Malzahar", "MALZAHAR", 10, 6, "62.5 %", 696, true,
+		"Xerath", "XERATH", 20, 5, "80 %", 696, true,
+		"Teemo", "TEEMO", 666, 666, "50 %", 696, true,
 	)
 }
 
@@ -109,7 +109,7 @@ func TestAppendRow(t *testing.T) {
 	assert.NoError(t, tb.AddColumn("champ", serie.String()))
 	assert.NoError(t, tb.AddColumn("win", serie.Int()))
 	assert.NoError(t, tb.AddColumn("loose", serie.Int()))
-	assert.NoError(t, tb.AddExprColumn("winRate", serie.Int(), "(`win` * 100 / (`win` + `loose`))"))
+	assert.NoError(t, tb.AddExprColumn("winRate", serie.Float64(), "(`win` * 100 / (`win` + `loose`))"))
 	assert.Error(t, tb.AddExprColumn("winRate", serie.String(), "test"))
 
 	assert.NoError(t, tb.AppendRow("Xerath", 25, 15, "expr"))
