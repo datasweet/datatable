@@ -8,21 +8,20 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Serie describe a serie
+// Serie describes a serie
 type Serie interface {
 	Type() value.Type
-	Error() error
 	Value(at int) value.Value
 	Values() []value.Value
 
 	// Mutate
 	Append(v ...interface{})
 	Prepend(v ...interface{})
-	Insert(at int, v ...interface{})
-	Update(at int, v interface{})
-	Delete(at int)
-	Grow(size int)
-	Shrink(size int)
+	Insert(at int, v ...interface{}) error
+	Update(at int, v interface{}) error
+	Delete(at int) error
+	Grow(size int) error
+	Shrink(size int) error
 
 	// Select
 	Head(size int) Serie
@@ -38,32 +37,30 @@ type Serie interface {
 
 	// Sort
 	sort.Interface
-	SortAsc() Serie
-	SortDesc() Serie
+	SortAsc()
+	SortDesc()
 
 	// Print
 	Print(opts ...PrintOption) string
 	fmt.Stringer
 }
 
+// Predicate describes a predicate to filter a serie
 type Predicate func(val value.Value) bool
 
 // New to create a new serie
-func New(builder value.Builder, v ...interface{}) Serie {
+func New(builder value.Builder, v ...interface{}) (Serie, error) {
+	if builder == nil {
+		return nil, errors.New("value builder is nil")
+	}
 	s := &serie{
 		builder: builder,
+		typ:     builder().Type(),
 	}
-	if builder == nil {
-		s.typ = value.Type("?")
-		s.err = errors.New("value builder is nil")
-	} else {
-		s.typ = builder().Type()
-	}
-
 	if len(v) > 0 {
 		s.Append(v...)
 	}
-	return s
+	return s, nil
 }
 
 // Serie implementation
@@ -71,23 +68,15 @@ type serie struct {
 	typ     value.Type
 	builder value.Builder
 	values  []value.Value
-	err     error
 }
 
 func (s *serie) Type() value.Type {
 	return s.typ
 }
 
-func (s *serie) Error() error {
-	return s.err
-}
-
 func (s *serie) Value(at int) value.Value {
-	if s.err != nil {
-		return nil
-	}
 	if at < 0 || at >= len(s.values) {
-		return nil
+		return s.builder(nil)
 	}
 	return s.values[at]
 }

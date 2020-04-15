@@ -60,7 +60,7 @@ func (value *rawValue) IsValid() bool {
 }
 
 func (value *rawValue) Compare(to Value) int {
-	return Lt
+	panic("not implemented")
 }
 
 func (value *rawValue) Clone() Value {

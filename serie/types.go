@@ -10,72 +10,86 @@ import (
 
 // Bool to create a boolean serie
 func Bool(v ...interface{}) Serie {
-	return New(value.Bool, v...)
+	s, _ := New(value.Bool, v...)
+	return s
 }
 
 // Int to create a int serie
 func Int(v ...interface{}) Serie {
-	return New(value.Int, v...)
+	s, _ := New(value.Int, v...)
+	return s
 }
 
 // Int64 to create a int64 serie
 func Int64(v ...interface{}) Serie {
-	return New(value.Int64, v...)
+	s, _ := New(value.Int64, v...)
+	return s
 }
 
 // Int32 to create a int32 serie
 func Int32(v ...interface{}) Serie {
-	return New(value.Int32, v...)
+	s, _ := New(value.Int32, v...)
+	return s
 }
 
 // Int16 to create a int16 serie
 func Int16(v ...interface{}) Serie {
-	return New(value.Int16, v...)
+	s, _ := New(value.Int16, v...)
+	return s
 }
 
 // Int8 to create a int8 serie
 func Int8(v ...interface{}) Serie {
-	return New(value.Int8, v...)
+	s, _ := New(value.Int8, v...)
+	return s
 }
 
 // Uint to create a uint serie
 func Uint(v ...interface{}) Serie {
-	return New(value.Uint, v...)
+	s, _ := New(value.Uint, v...)
+	return s
 }
 
 // Uint64 to create a uint64 serie
 func Uint64(v ...interface{}) Serie {
-	return New(value.Uint64, v...)
+	s, _ := New(value.Uint64, v...)
+	return s
 }
 
 // Uint32 to create a uint serie
 func Uint32(v ...interface{}) Serie {
-	return New(value.Uint32, v...)
+	s, _ := New(value.Uint32, v...)
+	return s
 }
 
 // Uint16 to create a uint serie
 func Uint16(v ...interface{}) Serie {
-	return New(value.Uint16, v...)
+	s, _ := New(value.Uint16, v...)
+	return s
 }
 
 // Uint8 to create a uint serie
 func Uint8(v ...interface{}) Serie {
-	return New(value.Uint8, v...)
+	s, _ := New(value.Uint8, v...)
+	return s
 }
 
 // Float32 to create a float32 serie
 func Float32(v ...interface{}) Serie {
-	return New(value.Float32, v...)
+	s, _ := New(value.Float32, v...)
+	return s
 }
 
 // Float64 to create a float64 serie
 func Float64(v ...interface{}) Serie {
-	return New(value.Float64, v...)
+	s, _ := New(value.Float64, v...)
+	return s
 }
 
 // String to create a string serie
 func String(v ...interface{}) Serie {
-	return New(value.String, v...)
+	s, _ := New(value.String, v...)
+	return s
 }
 
 // Raw to create a raw serie (no transformation)
@@ -84,7 +98,8 @@ func Raw(v ...interface{}) Serie {
 	builder := func(args ...interface{}) value.Value {
 		return value.Raw(args, nil)
 	}
-	return New(builder, v...)
+	s, _ := New(builder, v...)
+	return s
 }
 
 // Generic to create a generic serie.
@@ -94,10 +109,12 @@ func Generic(concretType interface{}, v ...interface{}) Serie {
 	builder := func(args ...interface{}) value.Value {
 		return value.Raw(args, ctyp)
 	}
-	return New(builder, v...)
+	s, _ := New(builder, v...)
+	return s
 }
 
 // Time to create a new time serie
 func Time(v ...interface{}) Serie {
-	return New(value.Time, v...)
+	s, _ := New(value.Time, v...)
+	return s
 }

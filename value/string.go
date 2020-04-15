@@ -46,6 +46,31 @@ func (value *stringValue) IsValid() bool {
 }
 
 func (value *stringValue) Compare(to Value) int {
+	if to == nil {
+		return Gt
+	}
+
+	sv, ok := to.(*stringValue)
+	if !ok {
+		// try to convert
+		sv = String(to.Val()).(*stringValue)
+	}
+
+	if sv.null {
+		if value.null {
+			return Eq
+		}
+		return Gt
+	}
+
+	if value.val == sv.val {
+		return Eq
+	}
+
+	if value.val > sv.val {
+		return Gt
+	}
+
 	return Lt
 }
 

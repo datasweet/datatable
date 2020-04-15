@@ -65,6 +65,17 @@ func (t *DataTable) Column(name string) Column {
 	return nil
 }
 
+// ColumnIndex gets the index of the column with name
+// returns -1 if not found
+func (t *DataTable) ColumnIndex(name string) int {
+	for i, col := range t.cols {
+		if col.Name() == name {
+			return i
+		}
+	}
+	return -1
+}
+
 // Records returns the rows in datatable as string
 // Computes all expressions.
 func (t *DataTable) Records() [][]string {

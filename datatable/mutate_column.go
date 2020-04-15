@@ -19,9 +19,6 @@ func (t *DataTable) addColumn(name string, serie serie.Serie, formulae string) e
 	if serie == nil {
 		return errors.New("nil serie provided")
 	}
-	if err := serie.Error(); err != nil {
-		return errors.Wrap(err, "serie provided has error")
-	}
 
 	var ex expr.Node
 	if formulae = strings.TrimSpace(formulae); len(formulae) > 0 {
@@ -60,22 +57,8 @@ func (t *DataTable) AddColumn(name string, serie serie.Serie) error {
 	return t.addColumn(name, serie, "")
 }
 
-func (t *DataTable) AddExprColumn(name string, typ serie.Serie, formulae string) error {
-	// var s serie.Serie
-	// switch typ {
-	// case ExprBool:
-	// 	s = serie.Bool()
-	// case ExprNumber:
-	// 	s = serie.Float64()
-	// case ExprString:
-	// 	s = serie.String()
-	// case ExprRaw:
-	// 	s = serie.Raw()
-	// default:
-	// 	return errors.Errorf("unknown expression type %v", typ)
-	// }
-
-	return t.addColumn(name, typ.Clone(false), formulae)
+func (t *DataTable) AddExprColumn(name string, serie serie.Serie, formulae string) error {
+	return t.addColumn(name, serie.Clone(false), formulae)
 }
 
 func (t *DataTable) RenameColumn(old, name string) error {
@@ -91,4 +74,18 @@ func (t *DataTable) RenameColumn(old, name string) error {
 		return nil
 	}
 	return errors.Errorf("column '%s' does not exist", name)
+}
+
+// SwapColumn
+func (t *DataTable) SwapColumn(a, b string) error {
+	i := t.ColumnIndex(a)
+	if i < 0 {
+		return errors.Errorf("column '%s' not found", a)
+	}
+	j := t.ColumnIndex(b)
+	if j < 0 {
+		return errors.Errorf("column '%s' not found", b)
+	}
+	t.cols[i], t.cols[j] = t.cols[j], t.cols[i]
+	return nil
 }

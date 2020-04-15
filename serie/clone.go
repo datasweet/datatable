@@ -22,6 +22,5 @@ func (s *serie) clone(includeValues bool) *serie {
 		typ:     s.typ,
 		builder: s.builder,
 		values:  values,
-		err:     s.err,
 	}
 }

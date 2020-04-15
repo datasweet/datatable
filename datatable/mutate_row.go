@@ -73,3 +73,10 @@ func (t *DataTable) AppendRow(v ...interface{}) error {
 
 	return nil
 }
+
+// SwapRow in table
+func (t *DataTable) SwapRow(i, j int) {
+	for _, col := range t.cols {
+		col.serie.Swap(i, j)
+	}
+}

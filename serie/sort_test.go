@@ -7,7 +7,7 @@ import (
 	"github.com/datasweet/datatable/serie"
 )
 
-func TestSortAsc(t *testing.T) {
+func TestSortInt(t *testing.T) {
 	random := []interface{}{
 		31, 23, 98, 3, 59, 67, 5, 5, 87, 18,
 		3, 88, 7, 63, 29, 62, 37, 66, 87, 26,
@@ -25,13 +25,21 @@ func TestSortAsc(t *testing.T) {
 	sort.Slice(random, func(i, j int) bool {
 		return random[i].(int) < random[j].(int)
 	})
-
-	ns := s.SortAsc()
-	assertSerieEq(t, ns, random...)
+	s.SortAsc()
+	assertSerieEq(t, s, random...)
 
 	sort.Slice(random, func(i, j int) bool {
 		return random[i].(int) > random[j].(int)
 	})
-	ns = s.SortDesc()
-	assertSerieEq(t, ns, random...)
+	s.SortDesc()
+	assertSerieEq(t, s, random...)
+}
+
+func TestSortString(t *testing.T) {
+	s := serie.String("A00103", "A00105", "A00104", "A00106", "A00104", nil)
+	s.SortAsc()
+	assertSerieEq(t, s, nil, "A00103", "A00104", "A00104", "A00105", "A00106")
+
+	s.SortDesc()
+	assertSerieEq(t, s, "A00106", "A00105", "A00104", "A00104", "A00103", nil)
 }

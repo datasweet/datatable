@@ -9,9 +9,7 @@ import (
 func TestGrowZero(t *testing.T) {
 	s := NewSerieInt(t)
 	assert.Equal(t, 100, s.Len())
-	assert.NoError(t, s.Error())
-	s.Grow(10)
-	assert.NoError(t, s.Error())
+	assert.NoError(t, s.Grow(10))
 	assert.Equal(t, 110, s.Len())
 	assertSerieEq(t, s,
 		31, 23, 98, 3, 59, 67, 5, 5, 87, 18,
@@ -31,19 +29,14 @@ func TestGrowZero(t *testing.T) {
 func TestShrink(t *testing.T) {
 	s := NewSerieInt(t)
 	assert.Equal(t, 100, s.Len())
-	assert.NoError(t, s.Error())
-	s.Shrink(90)
-	assert.NoError(t, s.Error())
+	assert.NoError(t, s.Shrink(90))
 	assert.Equal(t, 10, s.Len())
 	assertSerieEq(t, s, 31, 23, 98, 3, 59, 67, 5, 5, 87, 18)
 
-	s.Shrink(25)
-	assert.Error(t, s.Error())
+	assert.Error(t, s.Shrink(25))
 	assert.Equal(t, 10, s.Len())
 	assertSerieEq(t, s, 31, 23, 98, 3, 59, 67, 5, 5, 87, 18)
 
-	// s.Shrink(10)
-	// assert.NoError(t, s.Error())
-	// assert.Equal(t, 0, s.Len())
-	// assert.Equal(t, []interface{}{}, s.Values())
+	assert.NoError(t, s.Shrink(10))
+	assert.Equal(t, 0, s.Len())
 }

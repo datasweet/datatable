@@ -61,10 +61,6 @@ func (t *DataTable) evaluateExpressions() error {
 			}
 		}
 
-		if err := col.serie.Error(); err != nil {
-			return errors.Wrap(err, "evaluate expr failed")
-		}
-
 		// update dependency
 		values := make([]interface{}, 0, col.serie.Len())
 		for _, v := range col.serie.Values() {
