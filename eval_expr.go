@@ -4,6 +4,10 @@ import "github.com/pkg/errors"
 
 // evaluateExpressions to evaluate all columns with a binded expression
 func (t *DataTable) evaluateExpressions() error {
+	if !t.dirty || !t.hasExpr {
+		return nil
+	}
+
 	var cols []int
 	var exprCols []int
 	for i, c := range t.cols {

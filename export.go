@@ -1,37 +1,16 @@
 package datatable
 
-// ToTable returns the table with raw datas
-func ToTable(dt DataTable, headers bool) [][]interface{} {
-	if dt == nil {
-		return nil
-	}
+type ExportOptions struct {
+	HiddenColumns  []string
+	IncludeHeaders bool
+}
 
-	dr := dt.Rows()
-	cols := dt.Columns()
+type ExportOption func(opts *ExportOptions)
 
-	var hr []interface{}
-	if headers {
-		for _, col := range cols {
-			if !col.Hidden() {
-				label := col.Label()
-				if len(label) == 0 {
-					label = col.Name()
-				}
-				hr = append(hr, label)
-			}
-		}
+func newExportOptions(opt ...ExportOption) ExportOptions {
+	options := ExportOptions{}
+	for _, o := range opt {
+		o(&options)
 	}
-
-	var rows [][]interface{}
-	rows = append(rows, hr)
-	for _, r := range dr {
-		var row []interface{}
-		for _, col := range cols {
-			if !col.Hidden() {
-				row = append(row, r[col.Name()])
-			}
-		}
-		rows = append(rows, row)
-	}
-	return rows
+	return options
 }

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/datasweet/datatable/datatable"
+	"github.com/datasweet/datatable"
 	"github.com/stretchr/testify/assert"
 )
 

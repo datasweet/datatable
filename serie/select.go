@@ -11,29 +11,24 @@ func (s *serie) Tail(size int) Serie {
 }
 
 func (s *serie) Subset(from, size int) Serie {
-	cpy := s.clone(false)
+	cpy := &serie{typ: s.typ, builder: s.builder}
 	to := from + size
 	if from >= 0 && size > 0 && to <= len(s.values) {
-		cpy.values = make([]value.Value, size)
-		for i, val := range s.values[from:to] {
-			cpy.values[i] = val.Clone()
-		}
+		cpy.values = s.values[from:to]
 	}
 	return cpy
 }
 
 func (s *serie) Pick(at ...int) Serie {
-	ns := s.clone(false)
-	nilValue := s.builder(nil)
+	cpy := &serie{typ: s.typ, builder: s.builder}
 	for _, a := range at {
 		if a < 0 || a >= len(s.values) {
-			ns.values = append(ns.values, nilValue)
+			cpy.values = append(cpy.values, s.builder(nil))
 			continue
 		}
-		val := s.values[a]
-		ns.values = append(ns.values, val.Clone())
+		cpy.values = append(cpy.values, s.values[a])
 	}
-	return ns
+	return cpy
 }
 
 func (s *serie) FindRows(where Predicate) []int {
@@ -56,12 +51,12 @@ func (s *serie) Filter(where Predicate) Serie {
 }
 
 func (s *serie) Distinct() Serie {
-	cpy := s.clone(false)
+	cpy := &serie{typ: s.typ, builder: s.builder}
 	m := make(map[interface{}]bool)
 	out := make([]value.Value, 0)
 	for _, v := range s.values {
 		if _, ok := m[v.Val()]; !ok {
-			out = append(out, v.Clone())
+			out = append(out, v)
 			m[v.Val()] = true
 		}
 	}

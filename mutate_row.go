@@ -4,6 +4,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+type MutateOptions struct {
+	UseZero    bool // UseZero to creates "zero" value instead
+	KeepValues bool
+}
+
+type MutateOption func(opts *MutateOptions)
+
 func (t *DataTable) NewRow() Row {
 	r := make(Row)
 	return r
@@ -79,4 +86,44 @@ func (t *DataTable) SwapRow(i, j int) {
 	for _, col := range t.cols {
 		col.serie.Swap(i, j)
 	}
+}
+
+func (t *DataTable) Grow(size int) {
+	for _, col := range t.cols {
+		col.serie.Grow(size)
+	}
+}
+
+func (t *DataTable) Update(at int, row Row, opt ...MutateOption) error {
+	options := MutateOptions{}
+	for _, o := range opt {
+		o(&options)
+	}
+
+	if row == nil {
+		row = make(Row, 0)
+	}
+
+	for _, col := range t.cols {
+		if col.IsComputed() {
+			continue
+		}
+		cell, ok := row[col.name]
+		if ok {
+			col.serie.Update(at, cell)
+			continue
+		}
+		if options.KeepValues {
+			continue
+		}
+		if options.UseZero {
+			// col.serie.Update(at, ) ZERO !!
+			continue
+		}
+		col.serie.Update(at, nil)
+		// NIL
+	}
+
+	return nil
+
 }

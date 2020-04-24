@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (t *DataTable) addColumn(name string, serie serie.Serie, formulae string) error {
+func (t *DataTable) addColumn(name string, sr serie.Serie, formulae string) error {
 	name = strings.TrimSpace(name)
 	if len(name) == 0 {
 		return errors.New("you must provided a column name")
@@ -16,7 +16,7 @@ func (t *DataTable) addColumn(name string, serie serie.Serie, formulae string) e
 	if c := t.Column(name); c != nil {
 		return errors.Errorf("column '%s' already exists", name)
 	}
-	if serie == nil {
+	if sr == nil {
 		return errors.New("nil serie provided")
 	}
 
@@ -27,13 +27,14 @@ func (t *DataTable) addColumn(name string, serie serie.Serie, formulae string) e
 			return errors.Wrapf(err, "formulae syntax")
 		}
 		ex = parsed
+		t.hasExpr = true
 	}
 
-	serie = serie.Clone(true)
-	l := serie.Len()
+	sr = sr.Copy(serie.ShallowCopy)
+	l := sr.Len()
 
 	if l < t.nrows {
-		serie.Grow(t.nrows - l)
+		sr.Grow(t.nrows - l)
 	} else if l > t.nrows {
 		size := l - t.nrows
 		for _, col := range t.cols {
@@ -44,7 +45,7 @@ func (t *DataTable) addColumn(name string, serie serie.Serie, formulae string) e
 
 	t.cols = append(t.cols, &column{
 		name:     name,
-		serie:    serie,
+		serie:    sr,
 		formulae: formulae,
 		expr:     ex,
 	})
@@ -53,14 +54,17 @@ func (t *DataTable) addColumn(name string, serie serie.Serie, formulae string) e
 
 }
 
-func (t *DataTable) AddColumn(name string, serie serie.Serie) error {
-	return t.addColumn(name, serie, "")
+// AddColumn to datatable
+func (t *DataTable) AddColumn(name string, sr serie.Serie) error {
+	return t.addColumn(name, sr, "")
 }
 
-func (t *DataTable) AddExprColumn(name string, serie serie.Serie, formulae string) error {
-	return t.addColumn(name, serie.Clone(false), formulae)
+// AddExprColumn to add a calculated column
+func (t *DataTable) AddExprColumn(name string, sr serie.Serie, formulae string) error {
+	return t.addColumn(name, sr.Copy(serie.ShallowCopy), formulae)
 }
 
+// RenameColumn to rename a column
 func (t *DataTable) RenameColumn(old, name string) error {
 	name = strings.TrimSpace(name)
 	if len(name) == 0 {
@@ -76,7 +80,7 @@ func (t *DataTable) RenameColumn(old, name string) error {
 	return errors.Errorf("column '%s' does not exist", name)
 }
 
-// SwapColumn
+// SwapColumn to swap 2 columns
 func (t *DataTable) SwapColumn(a, b string) error {
 	i := t.ColumnIndex(a)
 	if i < 0 {

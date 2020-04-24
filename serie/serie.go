@@ -32,8 +32,8 @@ type Serie interface {
 	Filter(where Predicate) Serie
 	Distinct() Serie
 
-	// Clone
-	Clone(includeValues bool) Serie
+	// Copy
+	Copy(mode CopyMode) Serie
 
 	// Sort
 	sort.Interface

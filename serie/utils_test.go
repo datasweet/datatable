@@ -26,14 +26,6 @@ func NewSerieInt(t *testing.T) serie.Serie {
 	return s
 }
 
-func assertSerieIntEq(t *testing.T, s serie.Serie, val ...int) {
-	assert.NotNil(t, s)
-	assert.Equal(t, len(val), s.Len())
-	for i, v := range s.Values() {
-		assert.Equalf(t, val[i], v.Val(), "At index %d", i)
-	}
-}
-
 func assertSerieEq(t *testing.T, s serie.Serie, val ...interface{}) {
 	assert.NotNil(t, s)
 	assert.Equal(t, len(val), s.Len())
@@ -41,11 +33,3 @@ func assertSerieEq(t *testing.T, s serie.Serie, val ...interface{}) {
 		assert.Equalf(t, val[i], v.Val(), "At index %d", i)
 	}
 }
-
-// func assertSerieEq(t *testing.T, s serie.Serie, val ...string) {
-// 	assert.NotNil(t, s)
-// 	assert.Equal(t,
-// 		strings.TrimSpace(strings.Join(val, " ")),
-// 		strings.TrimSpace(s.Print(serie.PrintType(false), serie.PrintRowNumber(false), serie.PrintValueSeparator(" "))),
-// 	)
-// }

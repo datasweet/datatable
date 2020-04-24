@@ -3,7 +3,7 @@ package datatable_test
 import (
 	"testing"
 
-	"github.com/datasweet/datatable/datatable"
+	"github.com/datasweet/datatable"
 	"github.com/datasweet/datatable/serie"
 	"github.com/stretchr/testify/assert"
 )

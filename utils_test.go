@@ -1,14 +1,36 @@
 package datatable_test
 
 import (
-	"os"
 	"testing"
 
-	"github.com/datasweet/datatable/datatable"
+	"github.com/datasweet/datatable"
 	"github.com/datasweet/datatable/serie"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestPrint(t *testing.T) {
+// checkTable to check if a table contains cells
+func checkTable(t *testing.T, tb *datatable.DataTable, cells ...interface{}) {
+	ncols := tb.NumCols()
+	nrows := tb.NumRows()
+	assert.Len(t, cells, ncols*(nrows+1)) // + headers
+
+	cols := tb.Columns()
+	rows := tb.Rows()
+
+	for i, v := range cells {
+		r := i/ncols - 1
+		c := i % ncols
+
+		if r == -1 {
+			assert.Equal(t, v, cols[c], "HEADER COL #%d", r, c)
+			continue
+		}
+
+		assert.Equal(t, v, rows[r][cols[c]], "ROW #%d, COL #%d", r, c)
+	}
+}
+
+func New(t *testing.T) *datatable.DataTable {
 	tb := datatable.New("test")
 	tb.AddColumn("champ", serie.String("Malzahar", "Xerath", "Teemo"))
 	tb.AddExprColumn("champion", serie.String(), "upper(`champ`)")
@@ -25,7 +47,5 @@ func TestPrint(t *testing.T) {
 		"Teemo", "TEEMO", 666, 666, "50 %", 696.0, true,
 	)
 
-	tb.Print(os.Stdout)
-
-	// tb.Print(os.Stdout, datatable.PrintColumnType(false), datatable.PrintColumnName(false))
+	return tb
 }

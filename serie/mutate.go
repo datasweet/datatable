@@ -94,3 +94,20 @@ func (s *serie) Shrink(size int) error {
 	s.values = s.values[:from]
 	return nil
 }
+
+// Concat the serie (mutate) with others series
+// series provided must be the same type as the source serie
+func (s *serie) Concat(series ...Serie) error {
+	if len(series) == 0 {
+		return nil
+	}
+
+	// check type
+	// for _, os := range series {
+	// 	if os.Type() != s.Type() {
+	// 		return errors.Errorf("can't concat serie of type '%s' to '%s'", os.Type())
+	// 	}
+	// }
+
+	return nil
+}

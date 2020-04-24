@@ -6,22 +6,30 @@ import (
 	"hash/fnv"
 )
 
-// DataRow contains a row relative to columns
-type DataRow map[string]interface{}
+// Row contains a row relative to columns
+type Row map[string]interface{}
+
+// type Row interface {
+// 	Len() int
+// 	Cell(name string) interface{}
+// 	Set(name string, value interface{}) Row
+// 	Hash() uint64
+// }
+
+// type row struct {
+// 	cells map[string]value.Value
+// }
 
 // Set cell
-func (dr DataRow) Set(k string, v interface{}) DataRow {
-	// Check colName exists
-	if _, ok := dr[k]; ok {
-		dr[k] = v
-	}
-	return dr
+func (r Row) Set(k string, v interface{}) Row {
+	r[k] = v
+	return r
 }
 
 // Get cell
-func (dr DataRow) Get(k string) interface{} {
+func (r Row) Get(k string) interface{} {
 	// Check colName exists
-	if v, ok := dr[k]; ok {
+	if v, ok := r[k]; ok {
 		return v
 	}
 	return nil
@@ -29,13 +37,13 @@ func (dr DataRow) Get(k string) interface{} {
 
 // Hash computes the hash code from this datarow
 // can be used to filter the table (distinct rows)
-func (dr DataRow) Hash() (uint64, bool) {
+func (r Row) Hash() (uint64, bool) {
 	var hash uint64
 
 	// we xor-ing all keys / values to determinate
 	// the same hash of a datarow despite the fact the map has not
 	// been initalized in the same way
-	for k, v := range dr {
+	for k, v := range r {
 		h := fnv.New64()
 		buf := bytes.NewBufferString(k)
 		enc := gob.NewEncoder(buf)

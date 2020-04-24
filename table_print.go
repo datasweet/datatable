@@ -83,9 +83,21 @@ func (t *DataTable) Print(writer io.Writer, opt ...PrintOption) {
 			}
 			headers = append(headers, strings.Join(h, " "))
 		}
-
 		tw.SetHeader(headers)
 	}
-	tw.AppendBulk(t.Records())
+
+	if options.MaxRows > 1 && options.MaxRows <= t.NumRows() {
+		mr := options.MaxRows / 2
+		tw.AppendBulk(t.Head(mr).Records())
+		seps := make([]string, 0, len(t.cols))
+		for range t.cols {
+			seps = append(seps, "...")
+		}
+		tw.Append(seps)
+		tw.AppendBulk(t.Tail(mr).Records())
+	} else {
+		tw.AppendBulk(t.Records())
+	}
+
 	tw.Render()
 }
