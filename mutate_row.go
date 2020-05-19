@@ -4,13 +4,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type MutateOptions struct {
-	UseZero    bool // UseZero to creates "zero" value instead
-	KeepValues bool
-}
-
-type MutateOption func(opts *MutateOptions)
-
 func (t *DataTable) NewRow() Row {
 	r := make(Row)
 	return r
@@ -23,42 +16,16 @@ func (t *DataTable) Append(row ...Row) {
 			continue
 		}
 		for _, col := range t.cols {
-			if col.IsComputed() {
-				col.serie.Append(nil)
-				continue
-			}
-			if cell, ok := r[col.Name()]; ok {
-				col.serie.Append(cell)
-				continue
+			if !col.IsComputed() {
+				if cell, ok := r[col.Name()]; ok {
+					col.serie.Append(cell)
+					continue
+				}
 			}
 			col.serie.Grow(1)
-			//col.serie.Append(nil)
 		}
 		t.nrows++
 	}
-	t.dirty = true
-}
-
-// Append row to the table
-func (t *DataTable) append(row Row, useZero bool) {
-	for _, col := range t.cols {
-		if col.IsComputed() {
-			col.serie.Append(nil)
-			continue
-		}
-		if row != nil {
-			if cell, ok := row[col.name]; ok {
-				col.serie.Append(cell)
-				continue
-			}
-		}
-		if useZero {
-			col.serie.Grow(1)
-			continue
-		}
-		col.serie.Append(nil)
-	}
-	t.nrows++
 	t.dirty = true
 }
 
@@ -69,7 +36,7 @@ func (t *DataTable) AppendRow(v ...interface{}) error {
 
 	for i, col := range t.cols {
 		if col.IsComputed() {
-			col.serie.Append(nil)
+			col.serie.Grow(1)
 		} else {
 			col.serie.Append(v[i])
 		}
@@ -94,12 +61,7 @@ func (t *DataTable) Grow(size int) {
 	}
 }
 
-func (t *DataTable) Update(at int, row Row, opt ...MutateOption) error {
-	options := MutateOptions{}
-	for _, o := range opt {
-		o(&options)
-	}
-
+func (t *DataTable) Update(at int, row Row) error {
 	if row == nil {
 		row = make(Row, 0)
 	}
@@ -110,20 +72,15 @@ func (t *DataTable) Update(at int, row Row, opt ...MutateOption) error {
 		}
 		cell, ok := row[col.name]
 		if ok {
-			col.serie.Update(at, cell)
+			if err := col.serie.Set(at, cell); err != nil {
+				return errors.Wrapf(err, "col %s", col.name)
+			}
 			continue
 		}
-		if options.KeepValues {
-			continue
+		if err := col.serie.Set(at, nil); err != nil {
+			return errors.Wrapf(err, "col %s", col.name)
 		}
-		if options.UseZero {
-			// col.serie.Update(at, ) ZERO !!
-			continue
-		}
-		col.serie.Update(at, nil)
-		// NIL
 	}
 
 	return nil
-
 }

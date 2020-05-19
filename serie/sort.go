@@ -1,24 +1,29 @@
 package serie
 
 import (
+	"reflect"
 	"sort"
-
-	"github.com/datasweet/datatable/value"
 )
 
-func (s *serie) Len() int {
-	return len(s.values)
-}
-
 func (s *serie) Swap(i, j int) {
-	if i == j {
-		return
-	}
-	s.values[i], s.values[j] = s.values[j], s.values[i]
+	tmp := reflect.New(s.typ).Elem()
+	a, b := s.slice.Index(i), s.slice.Index(j)
+	tmp.Set(a)
+	a.Set(b)
+	b.Set(tmp)
 }
 
 func (s *serie) Less(i, j int) bool {
-	return s.values[i].Compare(s.values[j]) == value.Lt
+	return s.Compare(i, j) == Lt
+}
+
+// Compare values at indexes i, j
+// panic if out of range
+func (s *serie) Compare(i, j int) int {
+	return s.comparer.Call([]reflect.Value{
+		s.slice.Index(i),
+		s.slice.Index(j),
+	})[0].Interface().(int)
 }
 
 func (s *serie) SortAsc() {

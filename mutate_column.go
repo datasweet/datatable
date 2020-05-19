@@ -30,7 +30,7 @@ func (t *DataTable) addColumn(name string, sr serie.Serie, formulae string) erro
 		t.hasExpr = true
 	}
 
-	sr = sr.Copy(serie.ShallowCopy)
+	sr = sr.Copy()
 	l := sr.Len()
 
 	if l < t.nrows {
@@ -54,14 +54,94 @@ func (t *DataTable) addColumn(name string, sr serie.Serie, formulae string) erro
 
 }
 
-// AddColumn to datatable
+// AddColumn to datatable with a serie of T
 func (t *DataTable) AddColumn(name string, sr serie.Serie) error {
 	return t.addColumn(name, sr, "")
 }
 
-// AddExprColumn to add a calculated column
+// AddExprColumn to add a calculated column with a serie of T
 func (t *DataTable) AddExprColumn(name string, sr serie.Serie, formulae string) error {
-	return t.addColumn(name, sr.Copy(serie.ShallowCopy), formulae)
+	return t.addColumn(name, sr.EmptyCopy(), formulae)
+}
+
+// AddIntColumn to add a column of nullable int
+func (t *DataTable) AddIntColumn(name string, v ...interface{}) error {
+	return t.addColumn(name, serie.IntN(v...), "")
+}
+
+// AddIntExprColumn to add a calculated column of nullable int
+func (t *DataTable) AddIntExprColumn(name string, expr string) error {
+	return t.addColumn(name, serie.IntN(), expr)
+}
+
+// AddInt32Column to add a column of nullable int32
+func (t *DataTable) AddInt32Column(name string, v ...interface{}) error {
+	return t.addColumn(name, serie.Int32N(v...), "")
+}
+
+// AddInt32ExprColumn to add a calculated column of nullable int32
+func (t *DataTable) AddInt32ExprColumn(name string, expr string) error {
+	return t.addColumn(name, serie.Int32N(), expr)
+}
+
+// AddInt64Column to add a column of nullable int64
+func (t *DataTable) AddInt64Column(name string, v ...interface{}) error {
+	return t.addColumn(name, serie.Int64N(v...), "")
+}
+
+// AddInt64ExprColumn to add a calculated column of nullable int32
+func (t *DataTable) AddInt64ExprColumn(name string, expr string) error {
+	return t.addColumn(name, serie.Int64N(), expr)
+}
+
+// AddBoolColumn to add a column of nullable bool
+func (t *DataTable) AddBoolColumn(name string, v ...interface{}) error {
+	return t.addColumn(name, serie.BoolN(v...), "")
+}
+
+// AddBoolExprColumn to add a calculated column of nullable bool
+func (t *DataTable) AddBoolExprColumn(name string, expr string) error {
+	return t.addColumn(name, serie.BoolN(), expr)
+}
+
+// AddFloat32Column to add a column of nullable float32
+func (t *DataTable) AddFloat32Column(name string, v ...interface{}) error {
+	return t.addColumn(name, serie.Float32N(v...), "")
+}
+
+// AddFloat32ExprColumn to add a calculated column of nullable bool
+func (t *DataTable) AddFloat32ExprColumn(name string, expr string) error {
+	return t.addColumn(name, serie.Float32N(), expr)
+}
+
+// AddFloat64Column to add a column of nullable float64
+func (t *DataTable) AddFloat64Column(name string, v ...interface{}) error {
+	return t.addColumn(name, serie.Float64N(v...), "")
+}
+
+// AddFloat64ExprColumn to add a calculated column of nullable bool
+func (t *DataTable) AddFloat64ExprColumn(name string, expr string) error {
+	return t.addColumn(name, serie.Float64N(), expr)
+}
+
+// AddStringColumn to add a column of nullable string
+func (t *DataTable) AddStringColumn(name string, v ...interface{}) error {
+	return t.addColumn(name, serie.StringN(v...), "")
+}
+
+// AddStringExprColumn to add a calculated column of nullable bool
+func (t *DataTable) AddStringExprColumn(name string, expr string) error {
+	return t.addColumn(name, serie.StringN(), expr)
+}
+
+// AddTimeColumn to add a column of nullable time
+func (t *DataTable) AddTimeColumn(name string, v ...interface{}) error {
+	return t.addColumn(name, serie.TimeN(v...), "")
+}
+
+// AddTimeExprColumn to add a calculated column of nullable bool
+func (t *DataTable) AddTimeExprColumn(name string, expr string) error {
+	return t.addColumn(name, serie.TimeN(), expr)
 }
 
 // RenameColumn to rename a column

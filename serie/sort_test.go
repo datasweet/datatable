@@ -38,8 +38,8 @@ func TestSortInt(t *testing.T) {
 func TestSortString(t *testing.T) {
 	s := serie.String("A00103", "A00105", "A00104", "A00106", "A00104", nil)
 	s.SortAsc()
-	assertSerieEq(t, s, nil, "A00103", "A00104", "A00104", "A00105", "A00106")
+	assertSerieEq(t, s, "", "A00103", "A00104", "A00104", "A00105", "A00106")
 
 	s.SortDesc()
-	assertSerieEq(t, s, "A00106", "A00105", "A00104", "A00104", "A00103", nil)
+	assertSerieEq(t, s, "A00106", "A00105", "A00104", "A00104", "A00103", "")
 }

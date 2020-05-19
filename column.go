@@ -1,8 +1,9 @@
 package datatable
 
 import (
+	"reflect"
+
 	"github.com/datasweet/datatable/serie"
-	"github.com/datasweet/datatable/value"
 	"github.com/datasweet/expr"
 )
 
@@ -13,7 +14,7 @@ type ColumnOptions struct {
 
 type Column interface {
 	Name() string
-	Type() value.Type
+	Type() reflect.Type
 	IsVisible() bool
 	IsComputed() bool
 	//Clone(includeValues bool) Column
@@ -31,7 +32,7 @@ func (c *column) Name() string {
 	return c.name
 }
 
-func (c *column) Type() value.Type {
+func (c *column) Type() reflect.Type {
 	return c.serie.Type()
 }
 
@@ -43,15 +44,30 @@ func (c *column) IsComputed() bool {
 	return len(c.formulae) > 0
 }
 
-func (c *column) copy(mode serie.CopyMode) *column {
+func (c *column) emptyCopy() *column {
 	cpy := &column{
 		name:     c.name,
 		hidden:   c.hidden,
 		formulae: c.formulae,
-		serie:    c.serie.Copy(mode),
+		serie:    c.serie.EmptyCopy(),
 	}
 	if len(cpy.formulae) > 0 {
-		if parsed, err := expr.Parse(cpy.formulae); err != nil {
+		if parsed, err := expr.Parse(cpy.formulae); err == nil {
+			cpy.expr = parsed
+		}
+	}
+	return cpy
+}
+
+func (c *column) copy() *column {
+	cpy := &column{
+		name:     c.name,
+		hidden:   c.hidden,
+		formulae: c.formulae,
+		serie:    c.serie.Copy(),
+	}
+	if len(cpy.formulae) > 0 {
+		if parsed, err := expr.Parse(cpy.formulae); err == nil {
 			cpy.expr = parsed
 		}
 	}

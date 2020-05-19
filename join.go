@@ -4,37 +4,51 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/datasweet/datatable/serie"
-
 	"github.com/pkg/errors"
 )
 
 // InnerJoin selects records that have matching values in both tables.
 // left datatable is used as reference datatable.
 // <!> InnerJoin transforms an expr column to a raw column
-func InnerJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
-	return newJoinImpl(innerJoin, tables, on).Compute()
+func (left *DataTable) InnerJoin(right *DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(innerJoin, []*DataTable{left, right}, on).Compute()
 }
+
+// func InnerJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+// 	return newJoinImpl(innerJoin, tables, on).Compute()
+// }
 
 // LeftJoin returns all records from the left table (table1), and the matched records from the right table (table2).
 // The result is NULL from the right side, if there is no match.
 // <!> LeftJoin transforms an expr column to a raw column
-func LeftJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
-	return newJoinImpl(leftJoin, tables, on).Compute()
+func (left *DataTable) LeftJoin(right *DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(leftJoin, []*DataTable{left, right}, on).Compute()
 }
+
+// func LeftJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+// 	return newJoinImpl(leftJoin, tables, on).Compute()
+// }
 
 // RightJoin returns all records from the right table (table2), and the matched records from the left table (table1).
 // The result is NULL from the left side, when there is no match.
 // <!> RightJoin transforms an expr column to a raw column
-func RightJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
-	return newJoinImpl(rightJoin, tables, on).Compute()
+func (left *DataTable) RightJoin(right *DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(rightJoin, []*DataTable{left, right}, on).Compute()
 }
+
+// func RightJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+// 	return newJoinImpl(rightJoin, tables, on).Compute()
+// }
 
 // OuterJoin returns all records when there is a match in either left or right table
 // <!> OuterJoin transforms an expr column to a raw column
-func OuterJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
-	return newJoinImpl(outerJoin, tables, on).Compute()
+func (left *DataTable) OuterJoin(right *DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(outerJoin, []*DataTable{left, right}, on).Compute()
 }
+
+// func OuterJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+// 	return newJoinImpl(outerJoin, tables, on).Compute()
+// }
 
 type JoinOn struct {
 	Table string
@@ -133,7 +147,7 @@ func (jc *joinClause) copyColumnsTo(out *DataTable) error {
 			}
 		}
 
-		if err := out.addColumn(cname, col.serie.Copy(serie.EmptyCopy), col.formulae); err != nil {
+		if err := out.addColumn(cname, col.serie.EmptyCopy(), col.formulae); err != nil {
 			return err
 		}
 
@@ -293,14 +307,14 @@ func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 					row[cm[1]] = joinrow.Get(cm[0])
 				}
 				join.consumed[idx] = true
-				out.append(row, false)
+				out.Append(row)
 			}
 		} else if j.mode != innerJoin {
 			row := make(Row, len(refrow))
 			for _, cm := range ref.cmapper {
 				row[cm[1]] = refrow.Get(cm[0])
 			}
-			out.append(row, false)
+			out.Append(row)
 		}
 	}
 
@@ -314,7 +328,7 @@ func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 			for _, cm := range join.cmapper {
 				row[cm[1]] = joinrow.Get(cm[0])
 			}
-			out.append(row, false)
+			out.Append(row)
 		}
 	}
 

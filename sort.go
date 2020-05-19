@@ -3,7 +3,7 @@ package datatable
 import (
 	"sort"
 
-	"github.com/datasweet/datatable/value"
+	"github.com/datasweet/datatable/serie"
 )
 
 // By defines a sort to be applied
@@ -29,15 +29,13 @@ func (s *sorter) Swap(i, j int) {
 
 func (s *sorter) Less(i, j int) bool {
 	for _, by := range s.by {
-		serie := s.t.cols[by.index].serie
-		a, b := serie.Value(i), serie.Value(j)
-
-		switch cmp := a.Compare(b); cmp {
-		case value.Eq:
+		sr := s.t.cols[by.index].serie
+		switch cmp := sr.Compare(i, j); cmp {
+		case serie.Eq:
 			continue
-		case value.Gt:
+		case serie.Gt:
 			return by.Desc
-		case value.Lt:
+		case serie.Lt:
 			return !by.Desc
 		}
 	}
@@ -46,9 +44,11 @@ func (s *sorter) Less(i, j int) bool {
 }
 
 // Sort the table
-func (t *DataTable) Sort(by ...By) {
+func (t *DataTable) Sort(by ...By) *DataTable {
+	cpy := t.Copy()
+
 	if len(by) == 0 {
-		return
+		return cpy
 	}
 
 	for i := range by {
@@ -56,14 +56,15 @@ func (t *DataTable) Sort(by ...By) {
 		// Check if column exists
 		b.index = t.ColumnIndex(b.Column)
 		if b.index < 0 {
-			return
+			return cpy
 		}
 	}
 
 	srt := &sorter{
-		t:  t,
+		t:  cpy,
 		by: by,
 	}
 
 	sort.Sort(srt)
+	return cpy
 }

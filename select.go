@@ -1,11 +1,7 @@
 package datatable
 
-import (
-	"github.com/datasweet/datatable/serie"
-)
-
 func (t *DataTable) Subset(at, size int) *DataTable {
-	cpy := t.Copy(serie.EmptyCopy)
+	cpy := t.EmptyCopy()
 
 	for i, col := range t.cols {
 		cpy.cols[i].serie = col.serie.Subset(at, size)

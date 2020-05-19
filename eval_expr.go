@@ -28,11 +28,7 @@ func (t *DataTable) evaluateExpressions() error {
 	params := make(map[string][]interface{}, len(t.cols))
 	for _, pos := range cols {
 		col := t.cols[pos]
-		values := make([]interface{}, 0, col.serie.Len())
-		for _, v := range col.serie.Values() {
-			values = append(values, v.Val())
-		}
-		params[col.name] = values
+		params[col.name] = col.serie.All()
 	}
 
 	// Evaluate
@@ -55,22 +51,18 @@ func (t *DataTable) evaluateExpressions() error {
 			}
 
 			for i := 0; i < t.nrows; i++ {
-				col.serie.Update(i, arr[i])
+				col.serie.Set(i, arr[i])
 			}
 
 		} else {
 			// Is scalar
 			for i := 0; i < t.nrows; i++ {
-				col.serie.Update(i, res)
+				col.serie.Set(i, res)
 			}
 		}
 
 		// update dependency
-		values := make([]interface{}, 0, col.serie.Len())
-		for _, v := range col.serie.Values() {
-			values = append(values, v.Val())
-		}
-		params[name] = values
+		params[name] = col.serie.All()
 	}
 
 	t.dirty = false

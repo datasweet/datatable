@@ -1,14 +1,24 @@
 package datatable
 
-import (
-	"github.com/datasweet/datatable/serie"
-)
+// EmptyCopy copies the structure of datatable (no values)
+func (t *DataTable) EmptyCopy() *DataTable {
+	cpy := &DataTable{
+		name:    t.name,
+		dirty:   t.dirty,
+		hasExpr: t.hasExpr,
+		nrows:   0,
+		cols:    make([]*column, len(t.cols)),
+	}
+
+	for i, col := range t.cols {
+		cpy.cols[i] = col.emptyCopy()
+	}
+
+	return cpy
+}
 
 // Copy the datatable
-// Mode = ShallowCopy: any change of value in original datatable will be reflected to the copy. But faster
-// Mode = DeepCopy: copy any values
-// Mode = EmptyCopy: just copy the columns with no values
-func (t *DataTable) Copy(mode serie.CopyMode) *DataTable {
+func (t *DataTable) Copy() *DataTable {
 	cpy := &DataTable{
 		name:    t.name,
 		dirty:   t.dirty,
@@ -17,12 +27,8 @@ func (t *DataTable) Copy(mode serie.CopyMode) *DataTable {
 		cols:    make([]*column, len(t.cols)),
 	}
 
-	if mode == serie.EmptyCopy {
-		cpy.nrows = 0
-	}
-
 	for i, col := range t.cols {
-		cpy.cols[i] = col.copy(mode)
+		cpy.cols[i] = col.copy()
 	}
 
 	return cpy

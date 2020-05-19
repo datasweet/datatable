@@ -1,6 +1,7 @@
 package datatable
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -96,7 +97,7 @@ func (t *DataTable) Records() [][]string {
 	for i := 0; i < t.nrows; i++ {
 		r := make([]string, 0, len(cols))
 		for pos := range cols {
-			r = append(r, t.cols[pos].serie.Value(i).String())
+			r = append(r, fmt.Sprintf("%v", t.cols[pos].serie.Get(i)))
 		}
 		rows = append(rows, r)
 	}
@@ -122,7 +123,7 @@ func (t *DataTable) Rows() []Row {
 	for i := 0; i < t.nrows; i++ {
 		r := make(Row, len(cols))
 		for name, pos := range cols {
-			r[name] = t.cols[pos].serie.Value(i).Val()
+			r[name] = t.cols[pos].serie.Get(i)
 		}
 		rows = append(rows, r)
 	}
@@ -140,7 +141,7 @@ func (t *DataTable) Row(at int) Row {
 	t.evaluateExpressions()
 	r := make(Row, len(t.cols))
 	for _, col := range t.cols {
-		r[col.name] = col.serie.Value(at).Val()
+		r[col.name] = col.serie.Get(at)
 	}
 	return r
 }

@@ -3,40 +3,123 @@ package serie_test
 import (
 	"testing"
 
+	"github.com/datasweet/datatable/serie"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGrowZero(t *testing.T) {
-	s := NewSerieInt(t)
-	assert.Equal(t, 100, s.Len())
-	assert.NoError(t, s.Grow(10))
-	assert.Equal(t, 110, s.Len())
-	assertSerieEq(t, s,
-		31, 23, 98, 3, 59, 67, 5, 5, 87, 18,
-		3, 88, 7, 63, 29, 62, 37, 66, 87, 26,
-		24, 5, 62, 75, 69, 56, 15, 59, 40, 34,
-		68, 32, 34, 29, 90, 21, 8, 8, 100, 64,
-		30, 56, 73, 2, 65, 74, 3, 26, 92, 46,
-		6, 100, 35, 17, 91, 55, 99, 87, 9, 25,
-		55, 76, 39, 78, 43, 99, 35, 90, 36, 27,
-		52, 65, 33, 49, 84, 87, 42, 92, 27, 65,
-		48, 47, 74, 98, 76, 88, 18, 100, 69, 57,
-		69, 90, 74, 25, 64, 37, 63, 61, 85, 12,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	)
+func TestAppend(t *testing.T) {
+	s := serie.Int()
+	assertSerieEq(t, s)
+
+	s.Append(1, 2, 3, 4, "5")
+	assertSerieEq(t, s, 1, 2, 3, 4, 5)
+
+	s.Append(nil, 6, 7, "8", 9, 10)
+	assertSerieEq(t, s, 1, 2, 3, 4, 5, 0, 6, 7, 8, 9, 10)
+}
+
+func TestPrepend(t *testing.T) {
+	s := serie.Int()
+	assertSerieEq(t, s)
+
+	assert.NoError(t, s.Prepend(1, 2, 3, 4, 5))
+	assertSerieEq(t, s, 1, 2, 3, 4, 5)
+
+	assert.NoError(t, s.Prepend(-4, -3, -2, -1, 0))
+	assertSerieEq(t, s, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5)
+}
+
+func TestInsert(t *testing.T) {
+	s := serie.Int(1, 2, 3, 4, 5)
+	assertSerieEq(t, s, 1, 2, 3, 4, 5)
+
+	assert.NoError(t, s.Insert(2, 7, 8, 9, 10))
+	assertSerieEq(t, s, 1, 2, 7, 8, 9, 10, 3, 4, 5)
+
+	assert.Error(t, s.Insert(-1, 7, 8, 9, 10))
+	assert.Error(t, s.Insert(101, 7, 8, 9, 10))
+}
+
+func TestSet(t *testing.T) {
+	s := serie.Int(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+	assert.Error(t, s.Set(-1, 100))
+	assert.Error(t, s.Set(10, 100))
+	assert.Error(t, s.Set(0, []int{0, 1, 2, 4}))
+
+	assert.NoError(t, s.Set(5, 555))
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 555, 6, 7, 8, 9)
+
+	assert.NoError(t, s.Set(9, 999))
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 555, 6, 7, 8, 999)
+
+	assert.NoError(t, s.Set(0, -5))
+	assertSerieEq(t, s, -5, 1, 2, 3, 4, 555, 6, 7, 8, 999)
+
+}
+
+func TestDelete(t *testing.T) {
+	s := serie.Int(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+	assert.Error(t, s.Delete(-1))
+	assert.Error(t, s.Delete(10))
+
+	assert.NoError(t, s.Delete(5))
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 6, 7, 8, 9)
+
+	assert.NoError(t, s.Delete(8))
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 6, 7, 8)
+
+	assert.NoError(t, s.Delete(0))
+	assertSerieEq(t, s, 1, 2, 3, 4, 6, 7, 8)
+}
+
+func TestGrow(t *testing.T) {
+	s := serie.Int(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+	assert.Error(t, s.Grow(-5))
+
+	assert.NoError(t, s.Grow(5))
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0)
+
+	s = serie.IntN(0, 1, 2, 3, 4, 5)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5)
+	assert.NoError(t, s.Grow(5))
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, nil, nil, nil, nil, nil)
 }
 
 func TestShrink(t *testing.T) {
-	s := NewSerieInt(t)
-	assert.Equal(t, 100, s.Len())
-	assert.NoError(t, s.Shrink(90))
-	assert.Equal(t, 10, s.Len())
-	assertSerieEq(t, s, 31, 23, 98, 3, 59, 67, 5, 5, 87, 18)
+	s := serie.Int(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 
-	assert.Error(t, s.Shrink(25))
-	assert.Equal(t, 10, s.Len())
-	assertSerieEq(t, s, 31, 23, 98, 3, 59, 67, 5, 5, 87, 18)
+	assert.Error(t, s.Shrink(-5))
+	assert.Error(t, s.Shrink(11))
 
-	assert.NoError(t, s.Shrink(10))
+	assert.NoError(t, s.Shrink(5))
+	assertSerieEq(t, s, 0, 1, 2, 3, 4)
+
+	assert.NoError(t, s.Shrink(5))
+	assertSerieEq(t, s)
+}
+
+func TestConcat(t *testing.T) {
+	s := serie.Int(0, 1, 2, 3, 4)
+	assert.Error(t, s.Concat(serie.IntN(-1, -2, nil)))
+	assert.NoError(t, s.Concat(serie.Int(6, 7, 8, 9, 10)))
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 6, 7, 8, 9, 10)
+
+	s = serie.StringN("Léon", "Marie", "Sophie", "Marcel")
+	assertSerieEq(t, s, "Léon", "Marie", "Sophie", "Marcel")
+	assert.NoError(t, s.Concat(serie.StringN("Marion", "Paul", "Marie", "Marcel")))
+	assertSerieEq(t, s, "Léon", "Marie", "Sophie", "Marcel", "Marion", "Paul", "Marie", "Marcel")
+}
+
+func TestClear(t *testing.T) {
+	s := serie.Int(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assert.Equal(t, 10, s.Len())
+	s.Clear()
 	assert.Equal(t, 0, s.Len())
 }

@@ -81,7 +81,7 @@ func TestNewRow(t *testing.T) {
 		"champ", "win", "loose",
 		"Malzahar", 0, 3,
 		"Xerath", 0, 4,
-		"", 0, nil,
+		"", 0, 0,
 		"Ahri", 0, 0,
 	)
 }

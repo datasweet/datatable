@@ -4,13 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/datasweet/datatable/serie"
 )
 
 func TestEmptyCopy(t *testing.T) {
 	tb := New(t)
-	cpy := tb.Copy(serie.EmptyCopy)
+	cpy := tb.EmptyCopy()
 
 	assert.NotNil(t, cpy)
 	assert.NotSame(t, tb, cpy)
@@ -18,9 +16,9 @@ func TestEmptyCopy(t *testing.T) {
 	assert.Equal(t, tb.NumCols(), cpy.NumCols())
 }
 
-func TestShallowCopy(t *testing.T) {
+func TestCopy(t *testing.T) {
 	tb := New(t)
-	cpy := tb.Copy(serie.ShallowCopy)
+	cpy := tb.Copy()
 	assert.NotNil(t, cpy)
 	assert.NotSame(t, tb, cpy)
 	assert.Equal(t, tb.NumRows(), cpy.NumRows())
@@ -32,6 +30,4 @@ func TestShallowCopy(t *testing.T) {
 		"Xerath", "XERATH", 20, 5, "80 %", 696.0, true,
 		"Teemo", "TEEMO", 666, 666, "50 %", 696.0, true,
 	)
-
-	// edit original => should share
 }

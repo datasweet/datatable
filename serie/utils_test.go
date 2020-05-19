@@ -3,33 +3,15 @@ package serie_test
 import (
 	"testing"
 
-	"github.com/datasweet/datatable/serie"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/datasweet/datatable/serie"
 )
 
-func NewSerieInt(t *testing.T) serie.Serie {
-	// https://www.random.org/integers/?num=100&min=1&max=100&col=5&base=10&format=plain&rnd=new
-	values := []interface{}{
-		31, 23, 98, 3, 59, 67, 5, 5, 87, 18,
-		3, 88, 7, 63, 29, 62, 37, 66, 87, 26,
-		24, 5, 62, 75, 69, 56, 15, 59, 40, 34,
-		68, 32, 34, 29, 90, 21, 8, 8, 100, 64,
-		30, 56, 73, 2, 65, 74, 3, 26, 92, 46,
-		6, 100, 35, 17, 91, 55, 99, 87, 9, 25,
-		55, 76, 39, 78, 43, 99, 35, 90, 36, 27,
-		52, 65, 33, 49, 84, 87, 42, 92, 27, 65,
-		48, 47, 74, 98, 76, 88, 18, 100, 69, 57,
-		69, 90, 74, 25, 64, 37, 63, 61, 85, 12,
-	}
-	s := serie.Int(values...)
-	assertSerieEq(t, s, values...)
-	return s
-}
-
-func assertSerieEq(t *testing.T, s serie.Serie, val ...interface{}) {
+func assertSerieEq(t *testing.T, s serie.Serie, v ...interface{}) {
 	assert.NotNil(t, s)
-	assert.Equal(t, len(val), s.Len())
-	for i, v := range s.Values() {
-		assert.Equalf(t, val[i], v.Val(), "At index %d", i)
+	assert.Equal(t, len(v), s.Len())
+	for i, val := range s.All() {
+		assert.Equalf(t, v[i], val, "At index %d", i)
 	}
 }

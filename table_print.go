@@ -79,7 +79,7 @@ func (t *DataTable) Print(writer io.Writer, opt ...PrintOption) {
 				h = append(h, col.Name())
 			}
 			if options.ColumnType {
-				h = append(h, fmt.Sprintf("<%s>", string(col.serie.Type())))
+				h = append(h, fmt.Sprintf("<%s>", col.serie.Type().Name()))
 			}
 			headers = append(headers, strings.Join(h, " "))
 		}
