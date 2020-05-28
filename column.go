@@ -7,11 +7,6 @@ import (
 	"github.com/datasweet/expr"
 )
 
-type ColumnOptions struct {
-	Hidden bool
-	Format string
-}
-
 type Column interface {
 	Name() string
 	Type() reflect.Type

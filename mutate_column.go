@@ -160,6 +160,18 @@ func (t *DataTable) RenameColumn(old, name string) error {
 	return errors.Errorf("column '%s' does not exist", name)
 }
 
+func (t *DataTable) HideColumn(name string) {
+	if c := t.Column(name); c != nil {
+		(c.(*column)).hidden = true
+	}
+}
+
+func (t *DataTable) ShowColumn(name string) {
+	if c := t.Column(name); c != nil {
+		(c.(*column)).hidden = false
+	}
+}
+
 // SwapColumn to swap 2 columns
 func (t *DataTable) SwapColumn(a, b string) error {
 	i := t.ColumnIndex(a)

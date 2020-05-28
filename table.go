@@ -107,6 +107,10 @@ func (t *DataTable) Records() [][]string {
 // Rows returns the rows in datatable
 // Computes all expressions.
 func (t *DataTable) Rows() []Row {
+	if t == nil {
+		return nil
+	}
+
 	if err := t.evaluateExpressions(); err != nil {
 		panic(err)
 	}
