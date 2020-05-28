@@ -1,5 +1,7 @@
 package datatable
 
+import "github.com/pkg/errors"
+
 // Concat datatables
 func (left *DataTable) Concat(table ...*DataTable) (*DataTable, error) {
 	out := left.EmptyCopy()
@@ -49,4 +51,15 @@ func (left *DataTable) Concat(table ...*DataTable) (*DataTable, error) {
 	}
 
 	return out, nil
+}
+
+func Concat(tables []*DataTable) (*DataTable, error) {
+	switch len(tables) {
+	case 0:
+		return nil, errors.New("no tables")
+	case 1:
+		return tables[0].Concat()
+	default:
+		return tables[0].Concat(tables[1:]...)
+	}
 }

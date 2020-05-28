@@ -14,9 +14,9 @@ func (left *DataTable) InnerJoin(right *DataTable, on []JoinOn) (*DataTable, err
 	return newJoinImpl(innerJoin, []*DataTable{left, right}, on).Compute()
 }
 
-// func InnerJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
-// 	return newJoinImpl(innerJoin, tables, on).Compute()
-// }
+func InnerJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(innerJoin, tables, on).Compute()
+}
 
 // LeftJoin returns all records from the left table (table1), and the matched records from the right table (table2).
 // The result is NULL from the right side, if there is no match.
@@ -25,9 +25,9 @@ func (left *DataTable) LeftJoin(right *DataTable, on []JoinOn) (*DataTable, erro
 	return newJoinImpl(leftJoin, []*DataTable{left, right}, on).Compute()
 }
 
-// func LeftJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
-// 	return newJoinImpl(leftJoin, tables, on).Compute()
-// }
+func LeftJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(leftJoin, tables, on).Compute()
+}
 
 // RightJoin returns all records from the right table (table2), and the matched records from the left table (table1).
 // The result is NULL from the left side, when there is no match.
@@ -36,9 +36,9 @@ func (left *DataTable) RightJoin(right *DataTable, on []JoinOn) (*DataTable, err
 	return newJoinImpl(rightJoin, []*DataTable{left, right}, on).Compute()
 }
 
-// func RightJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
-// 	return newJoinImpl(rightJoin, tables, on).Compute()
-// }
+func RightJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(rightJoin, tables, on).Compute()
+}
 
 // OuterJoin returns all records when there is a match in either left or right table
 // <!> OuterJoin transforms an expr column to a raw column
@@ -46,9 +46,9 @@ func (left *DataTable) OuterJoin(right *DataTable, on []JoinOn) (*DataTable, err
 	return newJoinImpl(outerJoin, []*DataTable{left, right}, on).Compute()
 }
 
-// func OuterJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
-// 	return newJoinImpl(outerJoin, tables, on).Compute()
-// }
+func OuterJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(outerJoin, tables, on).Compute()
+}
 
 type JoinOn struct {
 	Table string
