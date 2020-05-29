@@ -62,8 +62,8 @@ func (t *DataTable) ToTable() [][]interface{} {
 }
 
 type Schema struct {
-	Name    string `json:"name"`
-	Columns []SchemaColumn
+	Name    string          `json:"name"`
+	Columns []SchemaColumn  `json:"cols"`
 	Rows    [][]interface{} `json:"rows"`
 }
 
