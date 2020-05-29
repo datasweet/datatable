@@ -66,5 +66,8 @@ func compareNullInt64(a, b NullInt64) int {
 		}
 		return Gt
 	}
+	if !a.Valid {
+		return Lt
+	}
 	return compareInt64(a.Int64, b.Int64)
 }

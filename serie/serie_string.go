@@ -60,5 +60,8 @@ func compareNullString(a, b NullString) int {
 		}
 		return Gt
 	}
+	if !a.Valid {
+		return Lt
+	}
 	return strings.Compare(a.String, b.String)
 }

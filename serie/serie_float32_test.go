@@ -15,6 +15,12 @@ func TestSerieFloat32(t *testing.T) {
 	s.Append(1, "23", 3.14, "teemo", true, nil)
 
 	assertSerieEq(t, s, float32(1), float32(23), float32(3.14), float32(0), float32(1), float32(0))
+
+	s.SortAsc()
+	assertSerieEq(t, s, float32(0), float32(0), float32(1), float32(1), float32(3.14), float32(23))
+
+	s.SortDesc()
+	assertSerieEq(t, s, float32(23), float32(3.14), float32(1), float32(1), float32(0), float32(0))
 }
 
 func TestSerieFloat32N(t *testing.T) {
@@ -23,4 +29,10 @@ func TestSerieFloat32N(t *testing.T) {
 
 	s.Append(1, "23", 3.14, "teemo", true, nil)
 	assertSerieEq(t, s, float32(1), float32(23), float32(3.14), nil, float32(1), nil)
+
+	s.SortAsc()
+	assertSerieEq(t, s, nil, nil, float32(1), float32(1), float32(3.14), float32(23))
+
+	s.SortDesc()
+	assertSerieEq(t, s, float32(23), float32(3.14), float32(1), float32(1), nil, nil)
 }

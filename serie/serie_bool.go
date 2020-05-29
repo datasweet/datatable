@@ -66,5 +66,8 @@ func compareNullBool(a, b NullBool) int {
 		}
 		return Gt
 	}
+	if !a.Valid {
+		return Lt
+	}
 	return compareBool(a.Bool, b.Bool)
 }

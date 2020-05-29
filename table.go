@@ -24,6 +24,11 @@ func (t *DataTable) Name() string {
 	return t.name
 }
 
+func (t *DataTable) Rename(name string) *DataTable {
+	t.name = name
+	return t
+}
+
 // NumRows returns the number of rows in datatable
 func (t *DataTable) NumRows() int {
 	return t.nrows

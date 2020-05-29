@@ -1,6 +1,7 @@
 package serie
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 
@@ -163,4 +164,8 @@ func (s *serie) Get(at int) interface{} {
 
 func (s *serie) Slice() interface{} {
 	return s.slice.Interface()
+}
+
+func (s *serie) String() string {
+	return fmt.Sprintf("%+v", s.Slice())
 }

@@ -66,5 +66,8 @@ func compareNullInt(a, b NullInt) int {
 		}
 		return Gt
 	}
+	if !a.Valid {
+		return Lt
+	}
 	return compareInt(a.Int, b.Int)
 }

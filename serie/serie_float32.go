@@ -66,5 +66,8 @@ func compareNullFloat32(a, b NullFloat32) int {
 		}
 		return Gt
 	}
+	if !a.Valid {
+		return Lt
+	}
 	return compareFloat32(a.Float32, b.Float32)
 }

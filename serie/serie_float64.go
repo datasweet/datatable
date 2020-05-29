@@ -66,5 +66,8 @@ func compareNullFloat64(a, b NullFloat64) int {
 		}
 		return Gt
 	}
+	if !a.Valid {
+		return Lt
+	}
 	return compareFloat64(a.Float64, b.Float64)
 }

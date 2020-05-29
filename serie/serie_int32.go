@@ -66,5 +66,8 @@ func compareNullInt32(a, b NullInt32) int {
 		}
 		return Gt
 	}
+	if !a.Valid {
+		return Lt
+	}
 	return compareInt32(a.Int32, b.Int32)
 }

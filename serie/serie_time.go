@@ -68,5 +68,8 @@ func compareNullTime(a, b NullTime) int {
 		}
 		return Gt
 	}
+	if !a.Valid {
+		return Lt
+	}
 	return compareTime(a.Time, b.Time)
 }

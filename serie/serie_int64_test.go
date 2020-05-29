@@ -22,6 +22,28 @@ func TestSerieInt64(t *testing.T) {
 		int64(-67),
 		int64(0),
 	)
+
+	s.SortAsc()
+	assertSerieEq(t, s,
+		int64(-67),
+		int64(0),
+		int64(0),
+		int64(1),
+		int64(23),
+		int64(31),
+		int64(98),
+	)
+
+	s.SortDesc()
+	assertSerieEq(t, s,
+		int64(98),
+		int64(31),
+		int64(23),
+		int64(1),
+		int64(0),
+		int64(0),
+		int64(-67),
+	)
 }
 
 func TestSerieInt64N(t *testing.T) {
@@ -36,6 +58,28 @@ func TestSerieInt64N(t *testing.T) {
 		nil,
 		int64(1),
 		int64(-67),
+		nil,
+	)
+
+	s.SortAsc()
+	assertSerieEq(t, s,
+		nil,
+		nil,
+		int64(-67),
+		int64(1),
+		int64(23),
+		int64(31),
+		int64(98),
+	)
+
+	s.SortDesc()
+	assertSerieEq(t, s,
+		int64(98),
+		int64(31),
+		int64(23),
+		int64(1),
+		int64(-67),
+		nil,
 		nil,
 	)
 }
