@@ -5,9 +5,9 @@
 
 [![datasweet-logo](https://www.datasweet.fr/wp-content/uploads/2019/02/datasweet-black.png)](http://www.datasweet.fr)
 
-datatable is a Go package to manipulate tabular datas, it's like an excel spreadsheet. 
+datatable is a Go package to manipulate tabular data, like an excel spreadsheet. 
 datatable is inspired by the pandas python package and the data.frame R structure.
-This package is production ready but we continue to modify the API. 
+Although it's production ready, be aware that we're still working on API improvements
 
 ## Installation
 ```
@@ -15,7 +15,7 @@ go get github.com/datasweet/datatable
 ```
 
 ## Features
-- Create custom Series (ie custom columns). By default, serie.Int, serie.String, serie.Time, serie.Float64. 
+- Create custom Series (ie custom columns). Currently available, serie.Int, serie.String, serie.Time, serie.Float64. 
 - Apply formulas
 - Selects (head, tail, subset)
 - Sorting
@@ -54,9 +54,9 @@ Teemo         	TEEMO            	666      	666        	50 %            	696     
 
 ### Creating a custom serie
 
-To create a custom serie you must provide 
-- a caster function to cast a generic value to our serie value. The signature must be func(i interface{}) T
-- a comparer to compare our serie value. The signature must be func(a, b T) int
+To create a custom serie you must provide:
+- a caster function, to cast a generic value to your serie value. The signature must be func(i interface{}) T
+- a comparator, to compare your serie value. The signature must be func(a, b T) int
 
 Example with a NullInt
 
@@ -103,7 +103,7 @@ func asNullInt(i interface{}) NullInt {
 	return ni
 }
 
-// compareNullInt is our comparer function
+// compareNullInt is our comparator function
 // used to sort
 func compareNullInt(a, b NullInt) int {
 	if !b.Valid {
