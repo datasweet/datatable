@@ -1,5 +1,6 @@
 package datatable
 
+// ToMap to export the datatable to a json-like struct
 func (t *DataTable) ToMap() []map[string]interface{} {
 	if t == nil {
 		return nil
@@ -28,6 +29,7 @@ func (t *DataTable) ToMap() []map[string]interface{} {
 	return rows
 }
 
+// ToTable to export the datatable to a csv-like struct
 func (t *DataTable) ToTable() [][]interface{} {
 	if t == nil {
 		return nil
@@ -61,6 +63,7 @@ func (t *DataTable) ToTable() [][]interface{} {
 	return rows
 }
 
+// Schema describes a datatable
 type Schema struct {
 	Name    string          `json:"name"`
 	Columns []SchemaColumn  `json:"cols"`
@@ -72,6 +75,7 @@ type SchemaColumn struct {
 	Type string `json:"type"`
 }
 
+// ToSchema to export the datatable to a schema struct
 func (t *DataTable) ToSchema() *Schema {
 	if t == nil {
 		return nil

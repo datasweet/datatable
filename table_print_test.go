@@ -26,6 +26,4 @@ func TestPrint(t *testing.T) {
 	)
 
 	tb.Print(os.Stdout, datatable.PrintColumnType(false), datatable.PrintMaxRows(3))
-
-	// tb.Print(os.Stdout, datatable.PrintColumnType(false), datatable.PrintColumnName(false))
 }

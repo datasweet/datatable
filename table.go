@@ -10,7 +10,7 @@ func New(name string) *DataTable {
 	return &DataTable{name: name}
 }
 
-// table is our main struct
+// DataTable is our main struct
 type DataTable struct {
 	name    string
 	cols    []*column
@@ -24,9 +24,9 @@ func (t *DataTable) Name() string {
 	return t.name
 }
 
-func (t *DataTable) Rename(name string) *DataTable {
+// Rename the datatable
+func (t *DataTable) Rename(name string) {
 	t.name = name
-	return t
 }
 
 // NumRows returns the number of rows in datatable

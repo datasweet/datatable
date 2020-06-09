@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// NewRow create a new row
 func (t *DataTable) NewRow() Row {
 	r := make(Row)
 	return r
@@ -29,6 +30,7 @@ func (t *DataTable) Append(row ...Row) {
 	t.dirty = true
 }
 
+// AppendRow creates a new row and append cells to this row
 func (t *DataTable) AppendRow(v ...interface{}) error {
 	if len(v) != len(t.cols) {
 		return errors.Errorf("length mismatch: expected %d elements, values have %d elements", len(t.cols), len(v))
@@ -55,12 +57,14 @@ func (t *DataTable) SwapRow(i, j int) {
 	}
 }
 
+// Grow the table by size
 func (t *DataTable) Grow(size int) {
 	for _, col := range t.cols {
 		col.serie.Grow(size)
 	}
 }
 
+// Update the row at index
 func (t *DataTable) Update(at int, row Row) error {
 	if row == nil {
 		row = make(Row, 0)

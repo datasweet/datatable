@@ -14,6 +14,8 @@ func (left *DataTable) InnerJoin(right *DataTable, on []JoinOn) (*DataTable, err
 	return newJoinImpl(innerJoin, []*DataTable{left, right}, on).Compute()
 }
 
+// InnerJoin selects records that have matching values in both tables.
+// tables[0] is used as reference datatable.
 func InnerJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
 	return newJoinImpl(innerJoin, tables, on).Compute()
 }
@@ -25,6 +27,8 @@ func (left *DataTable) LeftJoin(right *DataTable, on []JoinOn) (*DataTable, erro
 	return newJoinImpl(leftJoin, []*DataTable{left, right}, on).Compute()
 }
 
+// LeftJoin the tables.
+// tables[0] is used as reference datatable.
 func LeftJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
 	return newJoinImpl(leftJoin, tables, on).Compute()
 }
@@ -36,6 +40,8 @@ func (left *DataTable) RightJoin(right *DataTable, on []JoinOn) (*DataTable, err
 	return newJoinImpl(rightJoin, []*DataTable{left, right}, on).Compute()
 }
 
+// RightJoin the tables.
+// tables[0] is used as reference datatable.
 func RightJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
 	return newJoinImpl(rightJoin, tables, on).Compute()
 }
@@ -46,6 +52,8 @@ func (left *DataTable) OuterJoin(right *DataTable, on []JoinOn) (*DataTable, err
 	return newJoinImpl(outerJoin, []*DataTable{left, right}, on).Compute()
 }
 
+// OuterJoin the tables.
+// tables[0] is used as reference datatable.
 func OuterJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
 	return newJoinImpl(outerJoin, tables, on).Compute()
 }

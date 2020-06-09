@@ -9,17 +9,6 @@ import (
 // Row contains a row relative to columns
 type Row map[string]interface{}
 
-// type Row interface {
-// 	Len() int
-// 	Cell(name string) interface{}
-// 	Set(name string, value interface{}) Row
-// 	Hash() uint64
-// }
-
-// type row struct {
-// 	cells map[string]value.Value
-// }
-
 // Set cell
 func (r Row) Set(k string, v interface{}) Row {
 	r[k] = v

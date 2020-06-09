@@ -53,6 +53,7 @@ func (left *DataTable) Concat(table ...*DataTable) (*DataTable, error) {
 	return out, nil
 }
 
+// Concat datatables
 func Concat(tables []*DataTable) (*DataTable, error) {
 	switch len(tables) {
 	case 0:

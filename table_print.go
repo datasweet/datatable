@@ -9,6 +9,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+// PrintOptions to control the printer
 type PrintOptions struct {
 	ColumnName bool
 	ColumnType bool
@@ -42,6 +43,7 @@ func PrintMaxRows(v int) PrintOption {
 	}
 }
 
+// Print the tables with options
 func (t *DataTable) Print(writer io.Writer, opt ...PrintOption) {
 	options := PrintOptions{
 		ColumnName: true,

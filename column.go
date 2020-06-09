@@ -7,6 +7,7 @@ import (
 	"github.com/datasweet/expr"
 )
 
+// Column describes a column in our datatable
 type Column interface {
 	Name() string
 	Type() reflect.Type
