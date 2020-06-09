@@ -1,73 +1,103 @@
 package datatable
 
 import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"hash/fnv"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
 )
 
-// ColumnSelector to define a column selector between a left and right datatable
-type ColumnSelector struct {
-	Left  string
-	Right string
-}
-
-func On(left, right string) ColumnSelector {
-	return ColumnSelector{Left: left, Right: right}
-}
-
-func Using(colName string) ColumnSelector {
-	return ColumnSelector{Left: colName, Right: colName}
-}
-
 // InnerJoin selects records that have matching values in both tables.
 // left datatable is used as reference datatable.
 // <!> InnerJoin transforms an expr column to a raw column
-func InnerJoin(left, right DataTable, on ...ColumnSelector) (DataTable, error) {
-	return join(left, right, innerJoin, on...)
+func (left *DataTable) InnerJoin(right *DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(innerJoin, []*DataTable{left, right}, on).Compute()
+}
+
+// InnerJoin selects records that have matching values in both tables.
+// tables[0] is used as reference datatable.
+func InnerJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(innerJoin, tables, on).Compute()
 }
 
 // LeftJoin returns all records from the left table (table1), and the matched records from the right table (table2).
 // The result is NULL from the right side, if there is no match.
 // <!> LeftJoin transforms an expr column to a raw column
-func LeftJoin(left, right DataTable, on ...ColumnSelector) (DataTable, error) {
-	return join(left, right, leftJoin, on...)
+func (left *DataTable) LeftJoin(right *DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(leftJoin, []*DataTable{left, right}, on).Compute()
+}
+
+// LeftJoin the tables.
+// tables[0] is used as reference datatable.
+func LeftJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(leftJoin, tables, on).Compute()
 }
 
 // RightJoin returns all records from the right table (table2), and the matched records from the left table (table1).
 // The result is NULL from the left side, when there is no match.
 // <!> RightJoin transforms an expr column to a raw column
-func RightJoin(left, right DataTable, on ...ColumnSelector) (DataTable, error) {
-	return join(left, right, rightJoin, on...)
+func (left *DataTable) RightJoin(right *DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(rightJoin, []*DataTable{left, right}, on).Compute()
 }
 
-func computeHash(row DataRow, cols ...string) uint64 {
-	hash := fnv.New64()
-	buff := bytes.NewBuffer(nil)
-	enc := gob.NewEncoder(buff)
-
-	for _, name := range cols {
-		enc.Encode(row.Get(name))
-		hash.Write(buff.Bytes())
-	}
-
-	return hash.Sum64()
+// RightJoin the tables.
+// tables[0] is used as reference datatable.
+func RightJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(rightJoin, tables, on).Compute()
 }
 
-func computeHashTable(dt DataTable, cols ...string) map[uint64][]int {
-	mh := make(map[uint64][]int, 0)
+// OuterJoin returns all records when there is a match in either left or right table
+// <!> OuterJoin transforms an expr column to a raw column
+func (left *DataTable) OuterJoin(right *DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(outerJoin, []*DataTable{left, right}, on).Compute()
+}
 
-	// 2- Create hash for each row
-	for i, row := range dt.Rows() {
-		hash := computeHash(row, cols...)
-		mh[hash] = append(mh[hash], i)
+// OuterJoin the tables.
+// tables[0] is used as reference datatable.
+func OuterJoin(tables []*DataTable, on []JoinOn) (*DataTable, error) {
+	return newJoinImpl(outerJoin, tables, on).Compute()
+}
+
+type JoinOn struct {
+	Table string
+	Field string
+}
+
+var rgOn = regexp.MustCompile(`^(?:\[([^]]+)\]\.)?(?:\[([^]]+)\])$`)
+
+// On creates a "join on" expression
+// ie, as SQL, SELECT * FROM A INNER JOIN B ON B.id = A.user_id
+// Syntax: "[table].[field]", "field"
+func On(fields ...string) []JoinOn {
+	var jon []JoinOn
+	for _, f := range fields {
+		matches := rgOn.FindStringSubmatch(f)
+
+		switch len(matches) {
+		case 0:
+			jon = append(jon, JoinOn{Table: "*", Field: f})
+		case 3:
+			t := matches[1]
+			if len(t) == 0 {
+				t = "*"
+			}
+			jon = append(jon, JoinOn{Table: t, Field: matches[2]})
+		default:
+			return nil
+		}
 	}
 
-	return mh
+	return jon
+}
+
+// Using creates a "join using" expression
+// ie, as SQL, SELECT * FROM A INNER JOIN B USING 'field'
+func Using(fields ...string) []JoinOn {
+	var jon []JoinOn
+	for _, f := range fields {
+		jon = append(jon, JoinOn{Table: "*", Field: f})
+	}
+	return jon
 }
 
 type joinType uint8
@@ -76,15 +106,10 @@ const (
 	innerJoin joinType = iota
 	leftJoin
 	rightJoin
+	outerJoin
 )
 
-type joinMeta struct {
-	Table   DataTable
-	Clauses []string
-	Cols    []string
-}
-
-func colname(dt DataTable, col string) string {
+func colname(dt *DataTable, col string) string {
 	var sb strings.Builder
 	sb.WriteString(dt.Name())
 	sb.WriteString(".")
@@ -92,7 +117,129 @@ func colname(dt DataTable, col string) string {
 	return sb.String()
 }
 
-func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable, error) {
+type joinClause struct {
+	table         *DataTable
+	mcols         map[string][]string
+	on            []string
+	includeOnCols bool
+	cmapper       [][2]string // [initial, output]
+	hashtable     map[uint64][]int
+	consumed      map[int]bool
+}
+
+func (jc *joinClause) copyColumnsTo(out *DataTable) error {
+	if out == nil {
+		return errors.New("nil output datatable")
+	}
+
+	mon := make(map[string]bool, len(jc.on))
+	for _, o := range jc.on {
+		mon[o] = true
+	}
+
+	for _, col := range jc.table.cols {
+		name := col.name
+		cname := name
+
+		if _, found := mon[name]; found {
+			if !jc.includeOnCols {
+				continue
+			}
+		} else if v, ok := jc.mcols[name]; ok && len(v) > 1 {
+			// commons col between table
+			for _, tn := range v {
+				if tn == jc.table.name {
+					cname = colname(jc.table, name)
+					break
+				}
+			}
+		}
+
+		if err := out.addColumn(cname, col.serie.EmptyCopy(), col.formulae); err != nil {
+			return err
+		}
+
+		jc.cmapper = append(jc.cmapper, [2]string{name, cname})
+	}
+
+	return nil
+}
+
+func (jc *joinClause) initHashTable() {
+	jc.hashtable = hasher.Table(jc.table, jc.on)
+	jc.consumed = make(map[int]bool, jc.table.NumRows())
+}
+
+type joinImpl struct {
+	mode    joinType
+	tables  []*DataTable
+	on      []JoinOn
+	clauses []*joinClause
+	mcols   map[string][]string
+}
+
+func newJoinImpl(mode joinType, tables []*DataTable, on []JoinOn) *joinImpl {
+	return &joinImpl{
+		mode:   mode,
+		tables: tables,
+		on:     on,
+	}
+}
+
+func (j *joinImpl) Compute() (*DataTable, error) {
+	if err := j.checkInput(); err != nil {
+		return nil, err
+	}
+
+	j.initColMapper()
+
+	out := j.tables[0]
+	for i := 1; i < len(j.tables); i++ {
+		jdt, err := j.join(out, j.tables[i])
+		if err != nil {
+			return nil, err
+		}
+		out = jdt
+	}
+
+	if out == nil {
+		return nil, errors.New("no output")
+	}
+
+	return out, nil
+}
+
+func (j *joinImpl) checkInput() error {
+	if len(j.tables) < 2 {
+		return errors.New("we need at least 2 datatables to compute a join")
+	}
+	for i, t := range j.tables {
+		if t == nil || len(t.Name()) == 0 || t.NumCols() == 0 {
+			return errors.Errorf("table #%d is nil", i)
+		}
+	}
+	if len(j.on) == 0 {
+		return errors.New("no on clauses")
+	}
+	for i, o := range j.on {
+		if len(o.Field) == 0 {
+			return errors.Errorf("on #%d is nil", i)
+		}
+	}
+	return nil
+}
+
+func (j *joinImpl) initColMapper() {
+	mcols := make(map[string][]string)
+	for _, t := range j.tables {
+		for _, name := range t.Columns() {
+			mcols[name] = append(mcols[name], t.Name())
+		}
+	}
+	j.mcols = mcols
+}
+
+func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 	if left == nil {
 		return nil, errors.New("left is nil datatable")
 	}
@@ -100,133 +247,98 @@ func join(left, right DataTable, mode joinType, on ...ColumnSelector) (DataTable
 		return nil, errors.New("right is nil datatable")
 	}
 
-	if len(on) == 0 {
-		return nil, errors.New("no on clause")
+	clauses := [2]*joinClause{
+		&joinClause{
+			table:         left,
+			mcols:         j.mcols,
+			includeOnCols: true,
+		},
+		&joinClause{
+			table: right,
+			mcols: j.mcols,
+		},
 	}
 
-	// destructurate on clause
-	var lclauses []string
-	var rclauses []string
-	for _, clause := range on {
-		lclauses = append(lclauses, clause.Left)
-		rclauses = append(rclauses, clause.Right)
-	}
-
-	dt := New(fmt.Sprintf("join-%s-%s", left.Name(), right.Name()))
-
-	// Keep in memory the left / right columns names
-	// to copy more easilier values
-	var lcols []string
-	var rcols []string
-
-	// Create columns
-	// Copy left columns : reference table
-	for _, col := range left.Columns() {
-		name := col.Name()
-		ctyp := col.Type()
-		if col.Computed() {
-			ctyp = Raw
-		}
-		dc, err := dt.AddColumn(colname(left, name), ctyp)
-		if err != nil {
-			return nil, err
-		}
-		if label := col.Label(); len(label) > 0 {
-			dc.Label(colname(left, label))
-		}
-		dc.Hidden(col.Hidden())
-		lcols = append(lcols, name)
-	}
-
-	// Copy rights columns
-	// <!> expr column can return "nil",
-	// cause we can have an expr on a "id" right column
-	// example:
-	// InnerJoin(l, r, []string{"id"}, []string{"user_id"})
-	// if we have on right datatable, an expr with LOWER("user_id") => bug
-	for _, col := range right.Columns() {
-		name := col.Name()
-		found := false
-		for _, clause := range on {
-			if clause.Right == name {
-				found = true
-				break
-			}
-		}
-
-		if found {
+	// find on clauses
+	for _, o := range j.on {
+		if o.Table == left.Name() {
+			clauses[0].on = append(clauses[0].on, o.Field)
 			continue
 		}
 
-		ctyp := col.Type()
-		if col.Computed() {
-			ctyp = Raw
+		if o.Table == right.Name() {
+			clauses[1].on = append(clauses[1].on, o.Field)
+			continue
 		}
-		dc, err := dt.AddColumn(colname(right, name), ctyp)
-		if err != nil {
+
+		if o.Table == "*" || len(o.Table) == 0 {
+			clauses[0].on = append(clauses[0].on, o.Field)
+			clauses[1].on = append(clauses[1].on, o.Field)
+		}
+	}
+
+	// create output
+	out := New(left.Name())
+	for _, clause := range clauses {
+		if err := clause.copyColumnsTo(out); err != nil {
 			return nil, err
 		}
-		if label := col.Label(); len(label) > 0 {
-			dc.Label(colname(right, label))
-		}
-		dc.Hidden(col.Hidden())
-
-		rcols = append(rcols, name)
 	}
 
-	var ref joinMeta
-	var join joinMeta
-	var inner bool
-
-	switch mode {
-	case innerJoin:
-		ref = joinMeta{Table: left, Clauses: lclauses, Cols: lcols}
-		join = joinMeta{Table: right, Clauses: rclauses, Cols: rcols}
-		inner = true
-	case leftJoin:
-		ref = joinMeta{Table: left, Clauses: lclauses, Cols: lcols}
-		join = joinMeta{Table: right, Clauses: rclauses, Cols: rcols}
-		inner = false
+	// mode
+	var ref, join *joinClause
+	switch j.mode {
+	case innerJoin, leftJoin, outerJoin:
+		ref, join = clauses[0], clauses[1]
 	case rightJoin:
-		ref = joinMeta{Table: right, Clauses: rclauses, Cols: rcols}
-		join = joinMeta{Table: left, Clauses: lclauses, Cols: lcols}
-		inner = false
-
+		ref, join = clauses[1], clauses[0]
 	default:
-		return nil, errors.Errorf("unknown mode '%v'", mode)
+		return nil, errors.Errorf("unknown mode '%v'", j.mode)
 	}
 
-	hashtable := computeHashTable(join.Table, join.Clauses...)
+	join.initHashTable()
 
 	// Copy rows
-	for _, refrow := range ref.Table.Rows() {
+	for _, refrow := range ref.table.Rows() {
 		// Create hash
-		hash := computeHash(refrow, ref.Clauses...)
+		hash := hasher.Row(refrow, ref.on)
 
 		// Have we same hash in jointable ?
-		if indexes, ok := hashtable[hash]; ok {
+		if indexes, ok := join.hashtable[hash]; ok {
 			for _, idx := range indexes {
-				joinrow := join.Table.GetRow(idx)
-				row := dt.NewRow()
-
-				for _, name := range ref.Cols {
-					row[colname(ref.Table, name)] = refrow.Get(name)
+				joinrow := join.table.Row(idx)
+				row := out.NewRow()
+				for _, cm := range ref.cmapper {
+					row[cm[1]] = refrow.Get(cm[0])
 				}
-				for _, name := range join.Cols {
-					row[colname(join.Table, name)] = joinrow.Get(name)
+				for _, cm := range join.cmapper {
+					row[cm[1]] = joinrow.Get(cm[0])
 				}
-
-				dt.AddRow(row)
+				join.consumed[idx] = true
+				out.Append(row)
 			}
-		} else if !inner {
-			row := make(DataRow, len(refrow))
-			for k, v := range refrow {
-				row[colname(ref.Table, k)] = v
-				delete(row, k)
+		} else if j.mode != innerJoin {
+			row := make(Row, len(refrow))
+			for _, cm := range ref.cmapper {
+				row[cm[1]] = refrow.Get(cm[0])
 			}
-			dt.AddRow(row)
+			out.Append(row)
 		}
 	}
 
-	return dt, nil
+	// Outer: we must copy rows not consummed in right (join) table
+	if j.mode == outerJoin {
+		for i, joinrow := range join.table.Rows() {
+			if b, ok := join.consumed[i]; ok && b {
+				continue
+			}
+			row := make(Row, len(joinrow))
+			for _, cm := range join.cmapper {
+				row[cm[1]] = joinrow.Get(cm[0])
+			}
+			out.Append(row)
+		}
+	}
+
+	return out, nil
 }
