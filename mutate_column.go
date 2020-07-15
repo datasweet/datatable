@@ -160,11 +160,27 @@ func (t *DataTable) RenameColumn(old, name string) error {
 	return errors.Errorf("column '%s' does not exist", name)
 }
 
+// HideAll to hides all column
+// a hidden column will not be exported
+func (t *DataTable) HideAll() {
+	for _, col := range t.cols {
+		col.hidden = true
+	}
+}
+
 // HideColumn hides a column
 // a hidden column will not be exported
 func (t *DataTable) HideColumn(name string) {
 	if c := t.Column(name); c != nil {
 		(c.(*column)).hidden = true
+	}
+}
+
+// ShowAll to show all column
+// a shown column will be exported
+func (t *DataTable) ShowAll() {
+	for _, col := range t.cols {
+		col.hidden = false
 	}
 }
 

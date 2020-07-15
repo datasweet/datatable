@@ -76,6 +76,9 @@ func (t *DataTable) Print(writer io.Writer, opt ...PrintOption) {
 		headers := make([]string, 0, len(t.cols))
 
 		for _, col := range t.cols {
+			if !col.IsVisible() {
+				continue
+			}
 			var h []string
 			if options.ColumnName {
 				h = append(h, col.Name())
