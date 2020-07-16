@@ -93,3 +93,18 @@ func TestDistinct(t *testing.T) {
 		61, 85, 12,
 	)
 }
+
+func TestPick(t *testing.T) {
+	s := serie.Int(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s.Pick(4, 3), 4, 3)
+	assertSerieEq(t, s.Pick(-1), 0)
+	assertSerieEq(t, s.Pick(0, -1, 4, 3, 9, 10), 0, 0, 4, 3, 9, 0)
+
+	s = serie.IntN(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s.Pick(4, 3), 4, 3)
+	assertSerieEq(t, s.Pick(-1), nil)
+	assertSerieEq(t, s.Pick(0, -1, 4, 3, 9, 10), 0, nil, 4, 3, 9, nil)
+
+}

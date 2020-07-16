@@ -88,3 +88,19 @@ func (s *serie) Distinct() Serie {
 
 	return cpy
 }
+
+// Pick picks some indexes {at} to create a new serie
+// If {at} is out of range, Pick will fill with a "zero" value
+func (s *serie) Pick(at ...int) Serie {
+	cpy := s.EmptyCopy().(*serie)
+	cnt := s.Len()
+
+	for _, pos := range at {
+		if pos >= 0 && pos < cnt {
+			cpy.slice = reflect.Append(cpy.slice, s.slice.Index(pos))
+		} else {
+			cpy.slice = reflect.Append(cpy.slice, s.converter.Call([]reflect.Value{reflect.Zero(s.typ)})...)
+		}
+	}
+	return cpy
+}
