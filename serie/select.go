@@ -19,10 +19,15 @@ func (s *serie) Tail(size int) Serie {
 // Subset returns the a subset {at} index and with {size}
 func (s *serie) Subset(at, size int) Serie {
 	cpy := s.EmptyCopy().(*serie)
-	to := at + size
-	if at >= 0 && size > 0 && to <= s.Len() {
-		cpy.slice = s.slice.Slice(at, to)
+	ln := s.Len()
+	if at < 0 || at >= ln || size <= 0 {
+		return cpy
 	}
+	to := at + size
+	if to > ln {
+		to = ln
+	}
+	cpy.slice = s.slice.Slice(at, to)
 	return cpy
 }
 

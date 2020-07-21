@@ -37,7 +37,7 @@ func TestSubset(t *testing.T) {
 	assertSerieEq(t, s, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s.Subset(4, 3), 5, 6, 7)
 	assertSerieEq(t, s.Subset(7, 2), 8, 9)
-	assertSerieEq(t, s.Subset(7, 3))
+	assertSerieEq(t, s.Subset(7, 3), 8, 9)
 	assertSerieEq(t, s.Subset(8, 1), 9)
 	assertSerieEq(t, s.Subset(0, 5), 1, 2, 3, 4, 5)
 	assertSerieEq(t, s.Subset(0, 1), 1)
