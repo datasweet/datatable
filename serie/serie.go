@@ -31,6 +31,7 @@ type Serie interface {
 	Subset(at, size int) Serie
 	Filter(where interface{}) (Serie, error)
 	Distinct() Serie
+	Pick(at ...int) Serie
 
 	// Copy
 	EmptyCopy() Serie

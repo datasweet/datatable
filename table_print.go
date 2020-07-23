@@ -76,6 +76,9 @@ func (t *DataTable) Print(writer io.Writer, opt ...PrintOption) {
 		headers := make([]string, 0, len(t.cols))
 
 		for _, col := range t.cols {
+			if !col.IsVisible() {
+				continue
+			}
 			var h []string
 			if options.ColumnName {
 				h = append(h, col.Name())
@@ -92,7 +95,10 @@ func (t *DataTable) Print(writer io.Writer, opt ...PrintOption) {
 		mr := options.MaxRows / 2
 		tw.AppendBulk(t.Head(mr).Records())
 		seps := make([]string, 0, len(t.cols))
-		for range t.cols {
+		for _, col := range t.cols {
+			if !col.IsVisible() {
+				continue
+			}
 			seps = append(seps, "...")
 		}
 		tw.Append(seps)

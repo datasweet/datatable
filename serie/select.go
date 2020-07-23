@@ -19,10 +19,15 @@ func (s *serie) Tail(size int) Serie {
 // Subset returns the a subset {at} index and with {size}
 func (s *serie) Subset(at, size int) Serie {
 	cpy := s.EmptyCopy().(*serie)
-	to := at + size
-	if at >= 0 && size > 0 && to <= s.Len() {
-		cpy.slice = s.slice.Slice(at, to)
+	ln := s.Len()
+	if at < 0 || at >= ln || size <= 0 {
+		return cpy
 	}
+	to := at + size
+	if to > ln {
+		to = ln
+	}
+	cpy.slice = s.slice.Slice(at, to)
 	return cpy
 }
 
@@ -86,5 +91,21 @@ func (s *serie) Distinct() Serie {
 		}
 	}
 
+	return cpy
+}
+
+// Pick picks some indexes {at} to create a new serie
+// If {at} is out of range, Pick will fill with a "zero" value
+func (s *serie) Pick(at ...int) Serie {
+	cpy := s.EmptyCopy().(*serie)
+	cnt := s.Len()
+
+	for _, pos := range at {
+		if pos >= 0 && pos < cnt {
+			cpy.slice = reflect.Append(cpy.slice, s.slice.Index(pos))
+		} else {
+			cpy.slice = reflect.Append(cpy.slice, s.converter.Call([]reflect.Value{reflect.Zero(s.typ)})...)
+		}
+	}
 	return cpy
 }

@@ -86,6 +86,10 @@ func (t *DataTable) ColumnIndex(name string) int {
 // Records returns the rows in datatable as string
 // Computes all expressions.
 func (t *DataTable) Records() [][]string {
+	if t == nil {
+		return nil
+	}
+
 	if err := t.evaluateExpressions(); err != nil {
 		panic(err)
 	}
@@ -101,7 +105,7 @@ func (t *DataTable) Records() [][]string {
 	rows := make([][]string, 0, t.nrows)
 	for i := 0; i < t.nrows; i++ {
 		r := make([]string, 0, len(cols))
-		for pos := range cols {
+		for _, pos := range cols {
 			r = append(r, fmt.Sprintf("%v", t.cols[pos].serie.Get(i)))
 		}
 		rows = append(rows, r)

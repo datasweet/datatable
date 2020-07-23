@@ -14,7 +14,7 @@ func TestHead(t *testing.T) {
 	assertSerieEq(t, s.Head(5), 1, 2, 3, 4, 5)
 	assertSerieEq(t, s.Head(1), 1)
 	assertSerieEq(t, s.Head(9), 1, 2, 3, 4, 5, 6, 7, 8, 9)
-	assertSerieEq(t, s.Head(10))
+	assertSerieEq(t, s.Head(10), 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s.Head(0))
 	assertSerieEq(t, s.Head(-1))
 	assertSerieEq(t, s.Head(5).Head(1), 1)
@@ -37,7 +37,7 @@ func TestSubset(t *testing.T) {
 	assertSerieEq(t, s, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s.Subset(4, 3), 5, 6, 7)
 	assertSerieEq(t, s.Subset(7, 2), 8, 9)
-	assertSerieEq(t, s.Subset(7, 3))
+	assertSerieEq(t, s.Subset(7, 3), 8, 9)
 	assertSerieEq(t, s.Subset(8, 1), 9)
 	assertSerieEq(t, s.Subset(0, 5), 1, 2, 3, 4, 5)
 	assertSerieEq(t, s.Subset(0, 1), 1)
@@ -92,4 +92,19 @@ func TestDistinct(t *testing.T) {
 		36, 27, 52, 33, 49, 84, 42, 48, 47, 57,
 		61, 85, 12,
 	)
+}
+
+func TestPick(t *testing.T) {
+	s := serie.Int(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s.Pick(4, 3), 4, 3)
+	assertSerieEq(t, s.Pick(-1), 0)
+	assertSerieEq(t, s.Pick(0, -1, 4, 3, 9, 10), 0, 0, 4, 3, 9, 0)
+
+	s = serie.IntN(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	assertSerieEq(t, s.Pick(4, 3), 4, 3)
+	assertSerieEq(t, s.Pick(-1), nil)
+	assertSerieEq(t, s.Pick(0, -1, 4, 3, 9, 10), 0, nil, 4, 3, 9, nil)
+
 }

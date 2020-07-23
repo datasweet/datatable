@@ -17,6 +17,8 @@ func TestPrint(t *testing.T) {
 	tb.AddExprColumn("winRate", serie.String(), "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
 	tb.AddExprColumn("sum", serie.Float64(), "sum(`win`)")
 	tb.AddExprColumn("ok", serie.Bool(), "true")
+	tb.AddExprColumn("hidden", serie.Bool(), "false")
+	tb.HideColumn("hidden")
 
 	checkTable(t, tb,
 		"champ", "champion", "win", "loose", "winRate", "sum", "ok",
