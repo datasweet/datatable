@@ -14,7 +14,7 @@ func TestHead(t *testing.T) {
 	assertSerieEq(t, s.Head(5), 1, 2, 3, 4, 5)
 	assertSerieEq(t, s.Head(1), 1)
 	assertSerieEq(t, s.Head(9), 1, 2, 3, 4, 5, 6, 7, 8, 9)
-	assertSerieEq(t, s.Head(10))
+	assertSerieEq(t, s.Head(10), 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	assertSerieEq(t, s.Head(0))
 	assertSerieEq(t, s.Head(-1))
 	assertSerieEq(t, s.Head(5).Head(1), 1)
