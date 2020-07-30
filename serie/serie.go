@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-
-	"github.com/pkg/errors"
 )
 
 type Serie interface {
@@ -46,6 +44,18 @@ type Serie interface {
 	// // Print
 	// Print(opts ...PrintOption) string
 	// fmt.Stringer
+
+	// Statistics
+	Avg(opt ...StatOption) float64
+	Count(opt ...StatOption) int64
+	CountDistinct(opt ...StatOption) int64
+	Cusum(opt ...StatOption) []float64
+	Max(opt ...StatOption) float64
+	Min(opt ...StatOption) float64
+	Median(opt ...StatOption) float64
+	Stddev(opt ...StatOption) float64
+	Sum(opt ...StatOption) float64
+	Variance(opt ...StatOption) float64
 }
 
 type serie struct {
@@ -68,22 +78,22 @@ const (
 	Gt = 1
 )
 
-func New(typ interface{}, converter interface{}, comparer interface{}) (Serie, error) {
+func New(typ interface{}, converter interface{}, comparer interface{}) Serie {
 	if typ == nil {
-		return nil, errors.New("not a concrete type")
+		panic("arg 'typ' is not a concrete type")
 	}
 	if converter == nil {
-		return nil, errors.New("nil converter")
+		panic("nil converter")
 	}
 	if comparer == nil {
-		return nil, errors.New("nil comparer")
+		panic("nil comparer")
 	}
 
 	rv := reflect.ValueOf(typ)
 	kind := rv.Kind()
 
 	if kind == reflect.Invalid {
-		return nil, errors.Errorf("type %T is invalid", rv)
+		panic(fmt.Sprintf("type %T is invalid", rv))
 	}
 
 	serie := &serie{}
@@ -104,7 +114,7 @@ func New(typ interface{}, converter interface{}, comparer interface{}) (Serie, e
 		convType.NumOut() != 1 ||
 		convType.In(0).Kind() != reflect.Interface ||
 		convType.Out(0) != serie.typ {
-		return nil, errors.Errorf("wrong converter signature, must be func(i interface{}) %s", serie.typ.Name())
+		panic(fmt.Sprintf("wrong converter signature, must be func(i interface{}) %s", serie.typ.Name()))
 	}
 	serie.converter = convValue
 
@@ -117,7 +127,7 @@ func New(typ interface{}, converter interface{}, comparer interface{}) (Serie, e
 		cmpType.In(0) != serie.typ ||
 		cmpType.In(1) != serie.typ ||
 		cmpType.Out(0).Kind() != reflect.Int {
-		return nil, errors.New("wrong comparer signature, must be func(i, j T) int")
+		panic("wrong comparer signature, must be func(i, j T) int")
 	}
 	serie.comparer = cmpValue
 
@@ -126,7 +136,7 @@ func New(typ interface{}, converter interface{}, comparer interface{}) (Serie, e
 		serie.interfacer = true
 	}
 
-	return serie, nil
+	return serie
 }
 
 // Len returns the len of the serie

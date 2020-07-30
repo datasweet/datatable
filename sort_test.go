@@ -24,7 +24,7 @@ func TestSort(t *testing.T) {
 		4, "Luc", "Rolland", "lucrolland@example.com", "Marseille", nil, nil, nil,
 	)
 
-	sorted := dt.Sort(datatable.By{Column: "num_facture", Desc: true})
+	sorted := dt.Sort(datatable.SortBy{Column: "num_facture", Desc: true})
 
 	checkTable(t, sorted,
 		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
@@ -36,7 +36,7 @@ func TestSort(t *testing.T) {
 	)
 
 	// dt must not be modified
-	sorted = dt.Sort(datatable.By{Column: "ville"}, datatable.By{Column: "id", Desc: true})
+	sorted = dt.Sort(datatable.SortBy{Column: "ville"}, datatable.SortBy{Column: "id", Desc: true})
 	checkTable(t, sorted,
 		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
 		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
@@ -46,7 +46,7 @@ func TestSort(t *testing.T) {
 		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
 	)
 
-	sorted = dt.Sort(datatable.By{Column: "ville"}, datatable.By{Column: "prix_total", Desc: true})
+	sorted = dt.Sort(datatable.SortBy{Column: "ville"}, datatable.SortBy{Column: "prix_total", Desc: true})
 	checkTable(t, sorted,
 		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
 		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,

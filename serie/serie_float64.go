@@ -5,7 +5,7 @@ import (
 )
 
 func Float64(v ...interface{}) Serie {
-	s, _ := New(float64(0), cast.ToFloat64, compareFloat64)
+	s := New(float64(0), cast.ToFloat64, compareFloat64)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,7 +13,7 @@ func Float64(v ...interface{}) Serie {
 }
 
 func Float64N(v ...interface{}) Serie {
-	s, _ := New(NullFloat64{}, asNullFloat64, compareNullFloat64)
+	s := New(NullFloat64{}, asNullFloat64, compareNullFloat64)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

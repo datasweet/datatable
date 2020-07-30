@@ -6,7 +6,7 @@ import (
 )
 
 func Raw(v ...interface{}) Serie {
-	s, _ := New(RawValue{}, asRawValue, compareRawValue)
+	s := New(RawValue{}, asRawValue, compareRawValue)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

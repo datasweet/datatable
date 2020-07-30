@@ -5,7 +5,7 @@ import (
 )
 
 func Float32(v ...interface{}) Serie {
-	s, _ := New(float32(0), cast.ToFloat32, compareFloat32)
+	s := New(float32(0), cast.ToFloat32, compareFloat32)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,7 +13,7 @@ func Float32(v ...interface{}) Serie {
 }
 
 func Float32N(v ...interface{}) Serie {
-	s, _ := New(NullFloat32{}, asNullFloat32, compareNullFloat32)
+	s := New(NullFloat32{}, asNullFloat32, compareNullFloat32)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

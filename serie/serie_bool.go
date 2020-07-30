@@ -5,7 +5,7 @@ import (
 )
 
 func Bool(v ...interface{}) Serie {
-	s, _ := New(false, cast.ToBool, compareBool)
+	s := New(false, cast.ToBool, compareBool)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,7 +13,7 @@ func Bool(v ...interface{}) Serie {
 }
 
 func BoolN(v ...interface{}) Serie {
-	s, _ := New(NullBool{}, asNullBool, compareNullBool)
+	s := New(NullBool{}, asNullBool, compareNullBool)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

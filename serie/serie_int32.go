@@ -5,7 +5,7 @@ import (
 )
 
 func Int32(v ...interface{}) Serie {
-	s, _ := New(int32(0), cast.ToInt32, compareInt32)
+	s := New(int32(0), cast.ToInt32, compareInt32)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,7 +13,7 @@ func Int32(v ...interface{}) Serie {
 }
 
 func Int32N(v ...interface{}) Serie {
-	s, _ := New(NullInt32{}, asNullInt32, compareNullInt32)
+	s := New(NullInt32{}, asNullInt32, compareNullInt32)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

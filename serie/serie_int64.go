@@ -5,7 +5,7 @@ import (
 )
 
 func Int64(v ...interface{}) Serie {
-	s, _ := New(int64(0), cast.ToInt64, compareInt64)
+	s := New(int64(0), cast.ToInt64, compareInt64)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,7 +13,7 @@ func Int64(v ...interface{}) Serie {
 }
 
 func Int64N(v ...interface{}) Serie {
-	s, _ := New(NullInt64{}, asNullInt64, compareNullInt64)
+	s := New(NullInt64{}, asNullInt64, compareNullInt64)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

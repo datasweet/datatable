@@ -7,7 +7,7 @@ import (
 )
 
 func Time(v ...interface{}) Serie {
-	s, _ := New(time.Time{}, cast.ToTime, compareTime)
+	s := New(time.Time{}, cast.ToTime, compareTime)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -15,7 +15,7 @@ func Time(v ...interface{}) Serie {
 }
 
 func TimeN(v ...interface{}) Serie {
-	s, _ := New(NullTime{}, asNullTime, compareNullTime)
+	s := New(NullTime{}, asNullTime, compareNullTime)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

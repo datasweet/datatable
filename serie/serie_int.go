@@ -5,7 +5,7 @@ import (
 )
 
 func Int(v ...interface{}) Serie {
-	s, _ := New(0, cast.ToInt, compareInt)
+	s := New(0, cast.ToInt, compareInt)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,7 +13,7 @@ func Int(v ...interface{}) Serie {
 }
 
 func IntN(v ...interface{}) Serie {
-	s, _ := New(NullInt{}, asNullInt, compareNullInt)
+	s := New(NullInt{}, asNullInt, compareNullInt)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

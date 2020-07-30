@@ -8,7 +8,7 @@ import (
 
 // String to create a new string serie
 func String(v ...interface{}) Serie {
-	s, _ := New("", cast.ToString, strings.Compare)
+	s := New("", cast.ToString, strings.Compare)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -17,7 +17,7 @@ func String(v ...interface{}) Serie {
 
 // StringN to create a new serie with null value handling
 func StringN(v ...interface{}) Serie {
-	s, _ := New(NullString{}, asNullString, compareNullString)
+	s := New(NullString{}, asNullString, compareNullString)
 	if len(v) > 0 {
 		s.Append(v...)
 	}

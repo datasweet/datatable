@@ -9,27 +9,20 @@ import (
 )
 
 func TestNewSerie(t *testing.T) {
-	s, err := serie.New(nil, nil, nil)
-	assert.Nil(t, s)
-	assert.Error(t, err)
-
-	s, err = serie.New(1, nil, nil)
-	assert.Nil(t, s)
-	assert.Error(t, err)
-
-	s, err = serie.New(1, cast.ToFloat32, func(i, j int) int {
-		return serie.Eq
+	assert.Panics(t, func() { serie.New(nil, nil, nil) })
+	assert.Panics(t, func() { serie.New(1, nil, nil) })
+	assert.Panics(t, func() {
+		serie.New(1, cast.ToFloat32, func(i, j int) int {
+			return serie.Eq
+		})
 	})
-	assert.Nil(t, s)
-	assert.Error(t, err)
+	assert.Panics(t, func() { serie.New(1, cast.ToInt, nil) })
 
-	s, err = serie.New(1, cast.ToInt, nil)
-	assert.Nil(t, s)
-	assert.Error(t, err)
-
-	s, err = serie.New(1, cast.ToInt, func(i, j int) int {
+	// OK
+	s := serie.New(1, cast.ToInt, func(i, j int) int {
 		return serie.Eq
 	})
 	assert.NotNil(t, s)
-	assert.NoError(t, err)
+	s.Append(1, 2, 3, 4, 5)
+	assertSerieEq(t, s, 1, 2, 3, 4, 5)
 }
