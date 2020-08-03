@@ -8,9 +8,12 @@ import (
 
 type Serie interface {
 	Type() reflect.Type
+	Slice() interface{}     // Underlying slice
+	Get(at int) interface{} // T[i]. If T is an interfacer, returns Interfaced value
 	All() []interface{}
-	Get(at int) interface{}
-	Slice() interface{}
+
+	// Iterate
+	Iterator() Iterator
 
 	// Mutate
 	Append(v ...interface{})
@@ -27,9 +30,10 @@ type Serie interface {
 	Head(size int) Serie
 	Tail(size int) Serie
 	Subset(at, size int) Serie
-	Filter(where interface{}) (Serie, error)
 	Distinct() Serie
 	Pick(at ...int) Serie
+	Where(predicate func(interface{}) bool) Serie
+	NonNils() Serie
 
 	// Copy
 	EmptyCopy() Serie
@@ -58,14 +62,6 @@ type Serie interface {
 	Variance(opt ...StatOption) float64
 }
 
-type serie struct {
-	typ        reflect.Type
-	slice      reflect.Value
-	converter  reflect.Value
-	comparer   reflect.Value
-	interfacer bool
-}
-
 // Interfacer to convert a value of serie to interface{}
 // Used with serie.Get(at) serie.All()
 type Interfacer interface {
@@ -77,6 +73,14 @@ const (
 	Eq = 0
 	Gt = 1
 )
+
+type serie struct {
+	typ        reflect.Type
+	slice      reflect.Value
+	converter  reflect.Value
+	comparer   reflect.Value
+	interfacer bool
+}
 
 func New(typ interface{}, converter interface{}, comparer interface{}) Serie {
 	if typ == nil {
@@ -149,23 +153,15 @@ func (s *serie) Type() reflect.Type {
 	return s.typ
 }
 
-// All returns all values in serie
-func (s *serie) All() []interface{} {
-	cnt := s.slice.Len()
-	values := make([]interface{}, 0, cnt)
-	if s.interfacer {
-		for i := 0; i < cnt; i++ {
-			values = append(values, s.slice.Index(i).Interface().(Interfacer).Interface())
-		}
-	} else {
-		for i := 0; i < cnt; i++ {
-			values = append(values, s.slice.Index(i).Interface())
-		}
-	}
-	return values
+// Slice returns the underlying slice
+func (s *serie) Slice() interface{} {
+	return s.slice.Interface()
 }
 
 // Get returns the value at index
+// If the serie is an interfacer, ie, values have custom Interface() func,
+// the Interface() func will be called.
+// So you can have difference between serie.Slice()[at] and serie.Get(at)
 func (s *serie) Get(at int) interface{} {
 	if s.interfacer {
 		return s.slice.Index(at).Interface().(Interfacer).Interface()
@@ -173,8 +169,14 @@ func (s *serie) Get(at int) interface{} {
 	return s.slice.Index(at).Interface()
 }
 
-func (s *serie) Slice() interface{} {
-	return s.slice.Interface()
+// All to get all values
+// <!> Better to use serie.Iterator() if you want to work on values
+func (s *serie) All() []interface{} {
+	all := make([]interface{}, 0, s.Len())
+	for it := s.Iterator(); it.Next(); {
+		all = append(all, it.Current())
+	}
+	return all
 }
 
 func (s *serie) String() string {

@@ -45,9 +45,8 @@ func (s *serie) Avg(opt ...StatOption) float64 {
 
 // Count returns the number of non-nil values
 func (s *serie) Count(opt ...StatOption) int64 {
-	src := s.All()
-	return int64(len(src))
-
+	src := s.NonNils()
+	return int64(src.Len())
 }
 
 // CountDistinct returns the number of unique non-nil values

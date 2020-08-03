@@ -200,7 +200,7 @@ func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 				serie = serie.Pick(group.Rows...)
 			}
 
-			fmt.Println("stop serie", serie.All())
+			fmt.Println("stop serie", serie)
 
 			switch agg.Type {
 			case Avg:
