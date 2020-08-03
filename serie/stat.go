@@ -51,13 +51,8 @@ func (s *serie) Count(opt ...StatOption) int64 {
 
 // CountDistinct returns the number of unique non-nil values
 func (s *serie) CountDistinct(opt ...StatOption) int64 {
-	src := s.asFloats(opt...)
-	set := make(map[float64]bool)
-
-	for i := 0; i < len(src); i++ {
-		set[src[i]] = true
-	}
-	return int64(len(set))
+	src := s.NonNils().Distinct()
+	return int64(src.Len())
 }
 
 // Cusum returns the cumulative sum of non-nil values
