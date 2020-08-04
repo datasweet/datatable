@@ -24,7 +24,7 @@ func TestAggregate(t *testing.T) {
 	fmt.Println(out)
 
 	// Aggregate by SUM(prix_total), COUNT_DISTINCT(ville)
-	out, err = dt.Aggregate(datatable.AggregateBy{datatable.Sum, "prix_total"}, datatable.AggregateBy{datatable.Count, "ville"})
+	out, err = dt.Aggregate(datatable.AggregateBy{datatable.Sum, "prix_total"}, datatable.AggregateBy{datatable.CountDistinct, "ville"})
 	assert.NoError(t, err)
 	assert.NotNil(t, out)
 	fmt.Println(out)

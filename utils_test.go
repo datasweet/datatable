@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/datasweet/datatable"
-	"github.com/datasweet/datatable/serie"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,13 +31,13 @@ func checkTable(t *testing.T, tb *datatable.DataTable, cells ...interface{}) {
 
 func New(t *testing.T) *datatable.DataTable {
 	tb := datatable.New("test")
-	tb.AddColumn("champ", serie.String("Malzahar", "Xerath", "Teemo"))
-	tb.AddExprColumn("champion", serie.String(), "upper(`champ`)")
-	tb.AddColumn("win", serie.Int(10, 20, 666))
-	tb.AddColumn("loose", serie.Int(6, 5, 666))
-	tb.AddExprColumn("winRate", serie.String(), "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
-	tb.AddExprColumn("sum", serie.Float64(), "sum(`win`)")
-	tb.AddExprColumn("ok", serie.Bool(), "true")
+	tb.AddColumn("champ", datatable.String, "Malzahar", "Xerath", "Teemo")
+	tb.AddExprColumn("champion", datatable.String, "upper(`champ`)")
+	tb.AddColumn("win", datatable.Int, 10, 20, 666)
+	tb.AddColumn("loose", datatable.Int, 6, 5, 666)
+	tb.AddExprColumn("winRate", datatable.String, "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
+	tb.AddExprColumn("sum", datatable.Float64, "sum(`win`)")
+	tb.AddExprColumn("ok", datatable.Bool, "true")
 
 	checkTable(t, tb,
 		"champ", "champion", "win", "loose", "winRate", "sum", "ok",

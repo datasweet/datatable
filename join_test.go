@@ -5,28 +5,27 @@ import (
 	"time"
 
 	"github.com/datasweet/datatable"
-	"github.com/datasweet/datatable/serie"
 	"github.com/stretchr/testify/assert"
 )
 
 // https://sql.sh/cours/jointures/inner-join
 func sampleForJoin() (*datatable.DataTable, *datatable.DataTable) {
 	customers := datatable.New("Customers")
-	customers.AddIntColumn("id")
-	customers.AddStringColumn("prenom")
-	customers.AddStringColumn("nom")
-	customers.AddStringColumn("email")
-	customers.AddStringColumn("ville")
+	customers.AddColumn("id", datatable.Int)
+	customers.AddColumn("prenom", datatable.String)
+	customers.AddColumn("nom", datatable.String)
+	customers.AddColumn("email", datatable.String)
+	customers.AddColumn("ville", datatable.String)
 	customers.AppendRow(1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris")
 	customers.AppendRow(2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon")
 	customers.AppendRow(3, "Marine", "Prevost", "m.prevost@example.com", "Lille")
 	customers.AppendRow(4, "Luc", "Rolland", "lucrolland@example.com", "Marseille")
 
 	orders := datatable.New("Orders")
-	orders.AddIntColumn("user_id", 1, 1, 2, 3, 5)
-	orders.AddTimeColumn("date_achat", "2013-01-23", "2013-02-14", "2013-02-17", "2013-02-21", "2013-03-02")
-	orders.AddStringColumn("num_facture", "A00103", "A00104", "A00105", "A00106", "A00107")
-	orders.AddFloat64Column("prix_total", 203.14, 124.00, 149.45, 235.35, 47.58)
+	orders.AddColumn("user_id", datatable.Int, 1, 1, 2, 3, 5)
+	orders.AddColumn("date_achat", datatable.Time, "2013-01-23", "2013-02-14", "2013-02-17", "2013-02-21", "2013-03-02")
+	orders.AddColumn("num_facture", datatable.String, "A00103", "A00104", "A00105", "A00106", "A00107")
+	orders.AddColumn("prix_total", datatable.Float64, 203.14, 124.00, 149.45, 235.35, 47.58)
 
 	return customers, orders
 }
@@ -127,14 +126,14 @@ func TestOuterJoin(t *testing.T) {
 
 func TestJoinWithExpr(t *testing.T) {
 	customers, orders := sampleForJoin()
-	customers.AddExprColumn("upper_ville", serie.String(), "UPPER(ville)")
+	customers.AddExprColumn("upper_ville", datatable.String, "UPPER(ville)")
 
 	dt, err := customers.InnerJoin(orders, datatable.On("[Customers].[id]", "[Orders].[user_id]"))
 	assert.NoError(t, err)
 	assert.NotNil(t, dt)
 
 	col := dt.Column("upper_ville")
-	assert.Equal(t, "string", col.Type().Name())
+	assert.Equal(t, "NullString", col.Type().Name())
 	assert.True(t, col.IsComputed())
 
 	checkTable(t, dt,

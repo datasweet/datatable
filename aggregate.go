@@ -16,7 +16,7 @@ import (
 // Keyer is our main function to aggregate
 type GroupBy struct {
 	Name  string
-	Type  string
+	Type  ColumnType
 	Keyer func(row Row) (interface{}, bool)
 }
 
@@ -163,28 +163,24 @@ func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 
 	// create columns
 	for _, by := range g.by {
-		var s serie.Serie
-		if len(by.Type) != 0 {
-			s = newSerie(by.Type)
+		typ := by.Type
+		if len(typ) == 0 {
+			typ = Raw
 		}
-		if s == nil {
-			s = serie.Raw()
-		}
-		if err := out.AddColumn(by.Name, s); err != nil {
+		if err := out.AddColumn(by.Name, typ); err != nil {
 			return nil, errors.Wrapf(err, "can't add column '%s'", by.Name)
 		}
 	}
 	for _, agg := range aggs {
 		name := fmt.Sprintf("%s_%s", agg.Type, agg.Field)
+		typ := Float64
 		switch agg.Type {
 		case Count, CountDistinct:
-			if err := out.AddInt64Column(name); err != nil {
-				return nil, errors.Wrapf(err, "can't add column '%s'", name)
-			}
+			typ = Int64
 		default:
-			if err := out.AddFloat64Column(name); err != nil {
-				return nil, errors.Wrapf(err, "can't add column '%s'", name)
-			}
+		}
+		if err := out.AddColumn(name, typ); err != nil {
+			return nil, errors.Wrapf(err, "can't add column '%s'", name)
 		}
 	}
 
@@ -230,3 +226,15 @@ func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 
 	return out, nil
 }
+
+// func ByColumn(name string) {
+
+// 	return func(dt *DataTable) GroupBy {
+// 		return GroupBy{
+// 			Name: name,
+// 			Type: dt.Column(name).Type(),
+// 			Keyer:
+// 		}
+
+// 	}
+// }
