@@ -1,11 +1,11 @@
 package serie
 
 import (
-	"github.com/spf13/cast"
+	"github.com/datasweet/cast"
 )
 
 func Float64(v ...interface{}) Serie {
-	s := New(float64(0), cast.ToFloat64, compareFloat64)
+	s := New(float64(0), asFloat64, compareFloat64)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -18,6 +18,11 @@ func Float64N(v ...interface{}) Serie {
 		s.Append(v...)
 	}
 	return s
+}
+
+func asFloat64(i interface{}) float64 {
+	f, _ := cast.AsFloat64(i)
+	return f
 }
 
 func compareFloat64(a, b float64) int {
@@ -52,7 +57,7 @@ func asNullFloat64(i interface{}) NullFloat64 {
 		return v
 	}
 
-	if v, err := cast.ToFloat64E(i); err == nil {
+	if v, ok := cast.AsFloat64(i); ok {
 		ni.Float64 = v
 		ni.Valid = true
 	}

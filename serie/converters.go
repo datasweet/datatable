@@ -20,7 +20,7 @@ func AsFloat64(s Serie, missing *float64) Serie {
 		ln := s.Len()
 		arr := make([]float64, 0, ln)
 		for i := 0; i < ln; i++ {
-			if f, ok := cast.AsFloat(s.Get(i)); ok {
+			if f, ok := cast.AsFloat64(s.Get(i)); ok {
 				arr = append(arr, f)
 				continue
 			}

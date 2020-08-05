@@ -11,17 +11,17 @@ func TestNewTable(t *testing.T) {
 	tb := datatable.New("test")
 	assert.Equal(t, 0, tb.NumCols())
 
-	assert.NoError(t, tb.AddColumn("sessions", datatable.Int, 120))
+	assert.NoError(t, tb.AddColumn("sessions", datatable.Int, datatable.ColumnValues(120)))
 	assert.NoError(t, tb.AddColumn("bounces", datatable.Int))
 	assert.NoError(t, tb.AddColumn("bounceRate", datatable.Float64))
-	assert.Error(t, tb.AddColumn("bounces", datatable.Int, 11))
-	assert.Error(t, tb.AddColumn("    ", datatable.Int, 11))
+	assert.Error(t, tb.AddColumn("bounces", datatable.Int, datatable.ColumnValues(11)))
+	assert.Error(t, tb.AddColumn("    ", datatable.Int, datatable.ColumnValues(11)))
 	assert.Error(t, tb.AddColumn("nil", datatable.ColumnType("unknown")))
 
 	assert.Equal(t, []string{"sessions", "bounces", "bounceRate"}, tb.Columns())
 	assert.Equal(t, 1, tb.NumRows())
 
-	assert.NoError(t, tb.AddColumn("pageViews", datatable.Int, 1, 2, 3, 4, 5))
+	assert.NoError(t, tb.AddColumn("pageViews", datatable.Int, datatable.ColumnValues(1, 2, 3, 4, 5)))
 	assert.Equal(t, 4, tb.NumCols())
 	assert.Equal(t, 5, tb.NumRows())
 
@@ -75,7 +75,7 @@ func TestNewRow(t *testing.T) {
 		"Ahri", 0,
 	)
 
-	tb.AddColumn("loose", datatable.Int, 3, 4, nil)
+	tb.AddColumn("loose", datatable.Int, datatable.ColumnValues(3, 4, nil))
 	checkTable(t, tb,
 		"champ", "win", "loose",
 		"Malzahar", 0, 3,
@@ -87,13 +87,13 @@ func TestNewRow(t *testing.T) {
 
 func TestExprColumn(t *testing.T) {
 	tb := datatable.New("test")
-	tb.AddColumn("champ", datatable.String, "Malzahar", "Xerath", "Teemo")
-	tb.AddExprColumn("champion", datatable.String, "upper(`champ`)")
-	tb.AddColumn("win", datatable.Int, 10, 20, 666)
-	tb.AddColumn("loose", datatable.Int, 6, 5, 666)
-	tb.AddExprColumn("winRate", datatable.String, "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
-	tb.AddExprColumn("sum", datatable.Int, "sum(`win`)")
-	tb.AddExprColumn("ok", datatable.Bool, "true")
+	tb.AddColumn("champ", datatable.String, datatable.ColumnValues("Malzahar", "Xerath", "Teemo"))
+	tb.AddColumn("champion", datatable.String, datatable.ColumnExpr("upper(`champ`)"))
+	tb.AddColumn("win", datatable.Int, datatable.ColumnValues(10, 20, 666))
+	tb.AddColumn("loose", datatable.Int, datatable.ColumnValues(6, 5, 666))
+	tb.AddColumn("winRate", datatable.String, datatable.ColumnExpr("(`win` * 100 / (`win` + `loose`)) ~ \" %\""))
+	tb.AddColumn("sum", datatable.Int, datatable.ColumnExpr("sum(`win`)"))
+	tb.AddColumn("ok", datatable.Bool, datatable.ColumnExpr("true"))
 
 	checkTable(t, tb,
 		"champ", "champion", "win", "loose", "winRate", "sum", "ok",
@@ -108,8 +108,8 @@ func TestAppendRow(t *testing.T) {
 	assert.NoError(t, tb.AddColumn("champ", datatable.String))
 	assert.NoError(t, tb.AddColumn("win", datatable.Int))
 	assert.NoError(t, tb.AddColumn("loose", datatable.Int))
-	assert.NoError(t, tb.AddExprColumn("winRate", datatable.Float64, "(`win` * 100 / (`win` + `loose`))"))
-	assert.Error(t, tb.AddExprColumn("winRate", datatable.String, "test"))
+	assert.NoError(t, tb.AddColumn("winRate", datatable.Float64, datatable.ColumnExpr("(`win` * 100 / (`win` + `loose`))")))
+	assert.Error(t, tb.AddColumn("winRate", datatable.String, datatable.ColumnExpr("test")))
 
 	assert.NoError(t, tb.AppendRow("Xerath", 25, 15, "expr"))
 	assert.NoError(t, tb.AppendRow("Malzahar", 16, 16, nil))

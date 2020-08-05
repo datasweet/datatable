@@ -31,13 +31,15 @@ func checkTable(t *testing.T, tb *datatable.DataTable, cells ...interface{}) {
 
 func New(t *testing.T) *datatable.DataTable {
 	tb := datatable.New("test")
-	tb.AddColumn("champ", datatable.String, "Malzahar", "Xerath", "Teemo")
-	tb.AddExprColumn("champion", datatable.String, "upper(`champ`)")
-	tb.AddColumn("win", datatable.Int, 10, 20, 666)
-	tb.AddColumn("loose", datatable.Int, 6, 5, 666)
-	tb.AddExprColumn("winRate", datatable.String, "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
-	tb.AddExprColumn("sum", datatable.Float64, "sum(`win`)")
-	tb.AddExprColumn("ok", datatable.Bool, "true")
+	tb.AddColumn("champ", datatable.String, datatable.ColumnValues("Malzahar", "Xerath", "Teemo"))
+	tb.AddColumn("champion", datatable.String, datatable.ColumnExpr("upper(`champ`)"))
+	tb.AddColumn("win", datatable.Int, datatable.ColumnValues(10, 20, 666))
+	tb.AddColumn("loose", datatable.Int, datatable.ColumnValues(6, 5, 666))
+	tb.AddColumn("winRate", datatable.String, datatable.ColumnExpr("(`win` * 100 / (`win` + `loose`)) ~ \" %\""))
+	tb.AddColumn("sum", datatable.Float64, datatable.ColumnExpr("sum(`win`)"))
+	tb.AddColumn("ok", datatable.Bool, datatable.ColumnExpr("true"))
+	tb.AddColumn("hidden", datatable.Bool, datatable.ColumnExpr("false"))
+	tb.HideColumn("hidden")
 
 	checkTable(t, tb,
 		"champ", "champion", "win", "loose", "winRate", "sum", "ok",

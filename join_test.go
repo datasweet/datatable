@@ -22,10 +22,10 @@ func sampleForJoin() (*datatable.DataTable, *datatable.DataTable) {
 	customers.AppendRow(4, "Luc", "Rolland", "lucrolland@example.com", "Marseille")
 
 	orders := datatable.New("Orders")
-	orders.AddColumn("user_id", datatable.Int, 1, 1, 2, 3, 5)
-	orders.AddColumn("date_achat", datatable.Time, "2013-01-23", "2013-02-14", "2013-02-17", "2013-02-21", "2013-03-02")
-	orders.AddColumn("num_facture", datatable.String, "A00103", "A00104", "A00105", "A00106", "A00107")
-	orders.AddColumn("prix_total", datatable.Float64, 203.14, 124.00, 149.45, 235.35, 47.58)
+	orders.AddColumn("user_id", datatable.Int, datatable.ColumnValues(1, 1, 2, 3, 5))
+	orders.AddColumn("date_achat", datatable.Time, datatable.ColumnValues("2013-01-23", "2013-02-14", "2013-02-17", "2013-02-21", "2013-03-02"))
+	orders.AddColumn("num_facture", datatable.String, datatable.ColumnValues("A00103", "A00104", "A00105", "A00106", "A00107"))
+	orders.AddColumn("prix_total", datatable.Float64, datatable.ColumnValues(203.14, 124.00, 149.45, 235.35, 47.58))
 
 	return customers, orders
 }
@@ -126,14 +126,15 @@ func TestOuterJoin(t *testing.T) {
 
 func TestJoinWithExpr(t *testing.T) {
 	customers, orders := sampleForJoin()
-	customers.AddExprColumn("upper_ville", datatable.String, "UPPER(ville)")
+	customers.AddColumn("upper_ville", datatable.String, datatable.ColumnExpr("UPPER(ville)"))
 
 	dt, err := customers.InnerJoin(orders, datatable.On("[Customers].[id]", "[Orders].[user_id]"))
 	assert.NoError(t, err)
 	assert.NotNil(t, dt)
 
 	col := dt.Column("upper_ville")
-	assert.Equal(t, "NullString", col.Type().Name())
+	assert.Equal(t, "String", col.Type())
+	assert.Equal(t, "NullString", col.UnderlyingType().Name())
 	assert.True(t, col.IsComputed())
 
 	checkTable(t, dt,

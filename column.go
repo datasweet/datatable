@@ -1,7 +1,6 @@
 package datatable
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -12,28 +11,6 @@ import (
 
 // ColumnType defines the valid column type in datatable
 type ColumnType string
-
-var ctypes map[ColumnType]func() serie.Serie
-
-func init() {
-	ctypes = make(map[ColumnType]func() serie.Serie)
-	RegisterColumnType(Bool, func() serie.Serie { return serie.BoolN() })
-	RegisterColumnType(String, func() serie.Serie { return serie.StringN() })
-	RegisterColumnType(Int, func() serie.Serie { return serie.IntN() })
-	//RegisterType(Int8, func() serie.Serie { return serie.Int8N() })
-	//RegisterType(Int16, func() serie.Serie { return serie.Int16N() })
-	RegisterColumnType(Int32, func() serie.Serie { return serie.Int32N() })
-	RegisterColumnType(Int64, func() serie.Serie { return serie.Int64N() })
-	// RegisterType(UInt, func() serie.Serie { return serie.UIntN() })
-	// RegisterType(UInt8, func() serie.Serie { return serie.UInt8N() })
-	// RegisterType(UInt16, func() serie.Serie { return serie.UInt16N() })
-	// RegisterType(UInt32, func() serie.Serie { return serie.UInt32N() })
-	// RegisterType(UInt64, func() serie.Serie { return serie.UInt64N() })
-	RegisterColumnType(Float32, func() serie.Serie { return serie.Float32N() })
-	RegisterColumnType(Float64, func() serie.Serie { return serie.Float64N() })
-	RegisterColumnType(Time, func() serie.Serie { return serie.TimeN() })
-	RegisterColumnType(Raw, func() serie.Serie { return serie.Raw() })
-}
 
 const (
 	Bool   ColumnType = "bool"
@@ -54,8 +31,118 @@ const (
 	Raw     ColumnType = "raw"
 )
 
+// ColumnOptions describes options to be apply on a column
+type ColumnOptions struct {
+	Hidden        bool
+	NullAvailable bool
+	Expr          string
+	Values        []interface{}
+	TimeFormats   []string
+}
+
+// ColumnOption sets column options
+type ColumnOption func(opts *ColumnOptions)
+
+// ColumnHidden sets the visibility
+func ColumnHidden(v bool) ColumnOption {
+	return func(opts *ColumnOptions) {
+		opts.Hidden = v
+	}
+}
+
+// ColumnExpr sets the expr for the column
+// <!> Incompatible with ColumnValues
+func ColumnExpr(v string) ColumnOption {
+	return func(opts *ColumnOptions) {
+		opts.Expr = v
+	}
+}
+
+// ColumnValues fills the column with the values
+// <!> Incompatible with ColumnExpr
+func ColumnValues(v ...interface{}) ColumnOption {
+	return func(opts *ColumnOptions) {
+		opts.Values = v
+	}
+}
+
+// ColumnTimeFormats sets the valid time formats.
+// <!> Only for Time Column
+func ColumnTimeFormats(v ...string) ColumnOption {
+	return func(opts *ColumnOptions) {
+		opts.TimeFormats = append(opts.TimeFormats, v...)
+	}
+}
+
+// ColumnSerier to create a serie from column options
+type ColumnSerier func(ColumnOptions) serie.Serie
+
+// ctypes is our column type registry
+var ctypes map[ColumnType]ColumnSerier
+
+func init() {
+	ctypes = make(map[ColumnType]ColumnSerier)
+	RegisterColumnType(Bool, func(opts ColumnOptions) serie.Serie {
+		if opts.NullAvailable {
+			return serie.BoolN(opts.Values...)
+		}
+		return serie.Bool(opts.Values...)
+	})
+	RegisterColumnType(String, func(opts ColumnOptions) serie.Serie {
+		if opts.NullAvailable {
+			return serie.StringN(opts.Values...)
+		}
+		return serie.String(opts.Values...)
+	})
+	RegisterColumnType(Int, func(opts ColumnOptions) serie.Serie {
+		if opts.NullAvailable {
+			return serie.IntN(opts.Values...)
+		}
+		return serie.Int(opts.Values...)
+	})
+	RegisterColumnType(Int32, func(opts ColumnOptions) serie.Serie {
+		if opts.NullAvailable {
+			return serie.Int32N(opts.Values...)
+		}
+		return serie.Int32(opts.Values...)
+	})
+	RegisterColumnType(Int64, func(opts ColumnOptions) serie.Serie {
+		if opts.NullAvailable {
+			return serie.Int64N(opts.Values...)
+		}
+		return serie.Int64(opts.Values...)
+	})
+	RegisterColumnType(Float32, func(opts ColumnOptions) serie.Serie {
+		if opts.NullAvailable {
+			return serie.Float32N(opts.Values...)
+		}
+		return serie.Float32(opts.Values...)
+	})
+	RegisterColumnType(Float64, func(opts ColumnOptions) serie.Serie {
+		if opts.NullAvailable {
+			return serie.Float64N(opts.Values...)
+		}
+		return serie.Float64(opts.Values...)
+	})
+	RegisterColumnType(Time, func(opts ColumnOptions) serie.Serie {
+		var sr serie.Serie
+		if opts.NullAvailable {
+			sr = serie.TimeN(opts.TimeFormats...)
+		} else {
+			sr = serie.Time(opts.TimeFormats...)
+		}
+		if len(opts.Values) > 0 {
+			sr.Append(opts.Values...)
+		}
+		return sr
+	})
+	RegisterColumnType(Raw, func(opts ColumnOptions) serie.Serie {
+		return serie.Raw(opts.Values...)
+	})
+}
+
 // RegisterColumnType to extends the known type
-func RegisterColumnType(name ColumnType, serier func() serie.Serie) error {
+func RegisterColumnType(name ColumnType, serier ColumnSerier) error {
 	name = ColumnType(strings.TrimSpace(string(name)))
 	if len(name) == 0 {
 		return errors.New("empty name")
@@ -79,18 +166,19 @@ func ColumnTypes() []ColumnType {
 	return ctyp
 }
 
-// newSerie to create a serie from a known type
-func newSerie(ctyp ColumnType) serie.Serie {
+// newColumnSerie to create a serie from a known type
+func newColumnSerie(ctyp ColumnType, options ColumnOptions) (serie.Serie, error) {
 	if s, ok := ctypes[ctyp]; ok {
-		return s()
+		return s(options), nil
 	}
-	panic(fmt.Sprintf("unknown column type '%s'", ctyp))
+	return nil, errors.Errorf("unknown column type '%s'", ctyp)
 }
 
 // Column describes a column in our datatable
 type Column interface {
 	Name() string
-	Type() reflect.Type
+	Type() ColumnType
+	UnderlyingType() reflect.Type
 	IsVisible() bool
 	IsComputed() bool
 	//Clone(includeValues bool) Column
@@ -98,6 +186,7 @@ type Column interface {
 
 type column struct {
 	name     string
+	typ      ColumnType
 	hidden   bool
 	formulae string
 	expr     expr.Node
@@ -108,7 +197,11 @@ func (c *column) Name() string {
 	return c.name
 }
 
-func (c *column) Type() reflect.Type {
+func (c *column) Type() ColumnType {
+	return c.typ
+}
+
+func (c *column) UnderlyingType() reflect.Type {
 	return c.serie.Type()
 }
 
@@ -123,6 +216,7 @@ func (c *column) IsComputed() bool {
 func (c *column) emptyCopy() *column {
 	cpy := &column{
 		name:     c.name,
+		typ:      c.typ,
 		hidden:   c.hidden,
 		formulae: c.formulae,
 		serie:    c.serie.EmptyCopy(),
@@ -138,6 +232,7 @@ func (c *column) emptyCopy() *column {
 func (c *column) copy() *column {
 	cpy := &column{
 		name:     c.name,
+		typ:      c.typ,
 		hidden:   c.hidden,
 		formulae: c.formulae,
 		serie:    c.serie.Copy(),

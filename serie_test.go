@@ -9,6 +9,6 @@ import (
 func TestSerieFactory(t *testing.T) {
 	typs := ColumnTypes()
 	for _, typ := range typs {
-		assert.NotPanics(t, func() { newSerie(typ) }, typ)
+		assert.NotPanics(t, func() { newColumnSerie(typ, ColumnOptions{NullAvailable: true}) }, typ)
 	}
 }

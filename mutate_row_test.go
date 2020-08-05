@@ -8,11 +8,11 @@ import (
 
 func TestSwapRow(t *testing.T) {
 	tb := datatable.New("test")
-	tb.AddColumn("champ", datatable.String, "Malzahar", "Xerath", "Teemo")
-	tb.AddExprColumn("champion", datatable.String, "upper(`champ`)")
-	tb.AddColumn("win", datatable.Int, 10, 20, 666)
-	tb.AddColumn("loose", datatable.Int, 6, 5, 666)
-	tb.AddExprColumn("winRate", datatable.Float64, "(`win` * 100 / (`win` + `loose`))")
+	tb.AddColumn("champ", datatable.String, datatable.ColumnValues("Malzahar", "Xerath", "Teemo"))
+	tb.AddColumn("champion", datatable.String, datatable.ColumnExpr("upper(`champ`)"))
+	tb.AddColumn("win", datatable.Int, datatable.ColumnValues(10, 20, 666))
+	tb.AddColumn("loose", datatable.Int, datatable.ColumnValues(6, 5, 666))
+	tb.AddColumn("winRate", datatable.Float64, datatable.ColumnExpr("(`win` * 100 / (`win` + `loose`))"))
 	checkTable(t, tb,
 		"champ", "champion", "win", "loose", "winRate",
 		"Malzahar", "MALZAHAR", 10, 6, 62.5,

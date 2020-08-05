@@ -1,11 +1,11 @@
 package serie
 
 import (
-	"github.com/spf13/cast"
+	"github.com/datasweet/cast"
 )
 
 func Int32(v ...interface{}) Serie {
-	s := New(int32(0), cast.ToInt32, compareInt32)
+	s := New(int32(0), asInt32, compareInt32)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -18,6 +18,11 @@ func Int32N(v ...interface{}) Serie {
 		s.Append(v...)
 	}
 	return s
+}
+
+func asInt32(i interface{}) int32 {
+	n, _ := cast.AsInt32(i)
+	return n
 }
 
 func compareInt32(a, b int32) int {
@@ -52,7 +57,7 @@ func asNullInt32(i interface{}) NullInt32 {
 		return v
 	}
 
-	if v, err := cast.ToInt32E(i); err == nil {
+	if v, ok := cast.AsInt32(i); ok {
 		ni.Int32 = v
 		ni.Valid = true
 	}

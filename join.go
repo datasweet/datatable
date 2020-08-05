@@ -155,7 +155,9 @@ func (jc *joinClause) copyColumnsTo(out *DataTable) error {
 			}
 		}
 
-		if err := out.addColumn(cname, col.serie.EmptyCopy(), col.formulae); err != nil {
+		ccpy := col.emptyCopy()
+		ccpy.name = cname
+		if err := out.addColumn(ccpy); err != nil {
 			return err
 		}
 
