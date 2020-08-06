@@ -3,7 +3,8 @@ package datatable
 import (
 	"bytes"
 	"encoding/gob"
-	"hash/fnv"
+
+	"github.com/cespare/xxhash"
 )
 
 var hasher = &hasherImpl{}
@@ -14,13 +15,12 @@ func (h *hasherImpl) Row(row Row, cols []string) uint64 {
 	if row == nil {
 		return 0
 	}
-	hash := fnv.New64()
-	buff := bytes.NewBuffer(nil)
+	hash := xxhash.New()
+	buff := new(bytes.Buffer)
 	enc := gob.NewEncoder(buff)
 
 	for _, name := range cols {
-		enc.Encode(row.Get(name))
-		hash.Write(buff.Bytes())
+		enc.Encode(row[name])
 	}
 
 	return hash.Sum64()

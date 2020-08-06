@@ -1,31 +1,32 @@
-package csv_test
+package main
 
 import (
 	"fmt"
+	"log"
 	"os"
-	"testing"
 	"time"
 
 	"github.com/datasweet/datatable"
-
 	"github.com/datasweet/datatable/import/csv"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestImport(t *testing.T) {
-	dt, err := csv.Import("csv", "../../test/phone_data.csv",
+func main() {
+	dt, err := csv.Import("csv", "phone_data.csv",
 		csv.HasHeader(true),
 		csv.AcceptDate("02/01/06 15:04"),
 		csv.AcceptDate("2006-01"),
 	)
-	assert.NoError(t, err)
-	assert.NotNil(t, dt)
+	if err != nil {
+		log.Fatalf("reading csv: %v", err)
+	}
 
 	dt.Print(os.Stdout, datatable.PrintMaxRows(24))
 
-	dtc, err := dt.Aggregate(datatable.AggregateBy{Type: datatable.Count, Field: "index"})
-	assert.NoError(t, err)
-	fmt.Println(dtc)
+	dt2, err := dt.Aggregate(datatable.AggregateBy{Type: datatable.Count, Field: "index"})
+	if err != nil {
+		log.Fatalf("aggregate COUNT('index'): %v", err)
+	}
+	fmt.Println(dt2)
 
 	groups, err := dt.GroupBy(datatable.GroupBy{
 		Name: "year",
@@ -39,12 +40,16 @@ func TestImport(t *testing.T) {
 			return nil, false
 		},
 	})
-	assert.NoError(t, err)
-	out, err := groups.Aggregate(
+	if err != nil {
+		log.Fatalf("GROUP BY 'year': %v", err)
+	}
+	dt3, err := groups.Aggregate(
 		datatable.AggregateBy{Type: datatable.Sum, Field: "duration"},
 		datatable.AggregateBy{Type: datatable.CountDistinct, Field: "network"},
 	)
-	assert.NoError(t, err)
-	fmt.Println(out)
+	if err != nil {
+		log.Fatalf("Aggregate SUM('duration'), COUNT_DISTINCT('network') GROUP BY 'year': %v", err)
+	}
+	fmt.Println(dt3)
 
 }

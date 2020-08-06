@@ -84,7 +84,7 @@ func Import(name, path string, opt ...Option) (*datatable.DataTable, error) {
 				return nil, errors.Errorf("expected %d types, got %d", len(options.ColumnNames), len(options.ColumnTypes))
 			}
 			for i := range options.ColumnNames {
-				if err := dt.AddColumn(options.ColumnNames[i], options.ColumnTypes[i], datatable.ColumnTimeFormats(options.DateFormats...)); err != nil {
+				if err := dt.AddColumn(options.ColumnNames[i], options.ColumnTypes[i], datatable.TimeFormats(options.DateFormats...)); err != nil {
 					return nil, errors.Wrapf(err, "add column '%s' with type '%s'", options.ColumnNames[i], options.ColumnTypes[i])
 				}
 			}

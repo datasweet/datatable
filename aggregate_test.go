@@ -18,13 +18,13 @@ func TestAggregate(t *testing.T) {
 	fmt.Println(dt)
 
 	// Aggregate by SUM
-	out, err := dt.Aggregate(datatable.AggregateBy{datatable.Sum, "prix_total"})
+	out, err := dt.Aggregate(datatable.AggregateBy{datatable.Sum, "prix_total", "sum_prix_total"})
 	assert.NoError(t, err)
 	assert.NotNil(t, out)
 	fmt.Println(out)
 
 	// Aggregate by SUM(prix_total), COUNT_DISTINCT(ville)
-	out, err = dt.Aggregate(datatable.AggregateBy{datatable.Sum, "prix_total"}, datatable.AggregateBy{datatable.CountDistinct, "ville"})
+	out, err = dt.Aggregate(datatable.AggregateBy{datatable.Sum, "prix_total", "sum_prix_total"}, datatable.AggregateBy{datatable.CountDistinct, "ville", "uniq_count_ville"})
 	assert.NoError(t, err)
 	assert.NotNil(t, out)
 	fmt.Println(out)
@@ -56,7 +56,7 @@ func TestAggregate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, groups)
 
-	gdt, err := groups.Aggregate(datatable.AggregateBy{datatable.Sum, "prix_total"})
+	gdt, err := groups.Aggregate(datatable.AggregateBy{datatable.Sum, "prix_total", "sum_prix_total"})
 	assert.NoError(t, err)
 	fmt.Println(gdt)
 }

@@ -66,12 +66,7 @@ func (s *serie) Filter(predicate interface{}) Serie {
 // Distinct remove duplicate values
 func (s *serie) Distinct() Serie {
 	cnt := s.Len()
-
-	cpy := &serie{
-		typ:       s.typ,
-		converter: s.converter,
-		slice:     reflect.MakeSlice(reflect.SliceOf(s.typ), 0, cnt),
-	}
+	cpy := s.makeEmptyCopy(cnt)
 
 	m := make(map[interface{}]bool)
 

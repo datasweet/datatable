@@ -20,7 +20,7 @@ func sampleForExport(t *testing.T) *datatable.DataTable {
 	assert.NoError(t, err)
 	//dc.Hidden(true)
 
-	err = customers.AddColumn("expr_nom", datatable.String, datatable.ColumnExpr("`prenom` ~ ' ' ~ UPPER(`nom`)"))
+	err = customers.AddColumn("expr_nom", datatable.String, datatable.Expr("`prenom` ~ ' ' ~ UPPER(`nom`)"))
 	assert.NoError(t, err)
 	//dc.Label("nom")
 

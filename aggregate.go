@@ -67,6 +67,7 @@ func (a AggregationType) String() string {
 type AggregateBy struct {
 	Type  AggregationType
 	Field string
+	As    string
 }
 
 // GroupBy splits our datatable by group
@@ -172,7 +173,10 @@ func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 		}
 	}
 	for _, agg := range aggs {
-		name := fmt.Sprintf("%s_%s", agg.Type, agg.Field)
+		name := agg.As
+		if len(name) == 0 {
+			name = fmt.Sprintf("%s %s", agg.Type, agg.Field)
+		}
 		typ := Float64
 		switch agg.Type {
 		case Count, CountDistinct:
@@ -224,15 +228,3 @@ func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 
 	return out, nil
 }
-
-// func ByColumn(name string) {
-
-// 	return func(dt *DataTable) GroupBy {
-// 		return GroupBy{
-// 			Name: name,
-// 			Type: dt.Column(name).Type(),
-// 			Keyer:
-// 		}
-
-// 	}
-// }

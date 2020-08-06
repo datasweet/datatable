@@ -91,8 +91,8 @@ func TestGrowColConcat(t *testing.T) {
 
 func TestConcatWithExpr(t *testing.T) {
 	a, b, _ := sampleForConcat(t)
-	a.AddColumn("upper_ville", datatable.String, datatable.ColumnExpr("UPPER(ville)"))
-	b.AddColumn("upper_ville", datatable.String, datatable.ColumnExpr("UPPER(ville)"))
+	a.AddColumn("upper_ville", datatable.String, datatable.Expr("UPPER(ville)"))
+	b.AddColumn("upper_ville", datatable.String, datatable.Expr("UPPER(ville)"))
 
 	dt, err := a.Concat(b)
 	assert.NoError(t, err)

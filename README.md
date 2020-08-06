@@ -16,40 +16,103 @@ go get github.com/datasweet/datatable
 
 ## Features
 - Create custom Series (ie custom columns). Currently available, serie.Int, serie.String, serie.Time, serie.Float64. 
-- Apply formulas
+- Apply expressions
 - Selects (head, tail, subset)
 - Sorting
 - InnerJoin, LeftJoin, RightJoin, OuterJoin, Concats
+- Aggregate
+- Import from CSV
 - Export to map, slice
 
 
 ### Creating a DataTable
 ```go
+package main
 
 import (
+	"fmt"
+
 	"github.com/datasweet/datatable"
-	"github.com/datasweet/datatable/serie"
 )
 
 func main() {
-  tb := datatable.New("test")
-	tb.AddColumn("champ", serie.String("Malzahar", "Xerath", "Teemo"))
-	tb.AddExprColumn("champion", serie.String(), "upper(`champ`)")
-	tb.AddColumn("win", serie.Int(10, 20, 666))
-	tb.AddColumn("loose", serie.Int(6, 5, 666))
-	tb.AddExprColumn("winRate", serie.String(), "(`win` * 100 / (`win` + `loose`)) ~ \" %\"")
-	tb.AddExprColumn("sum", serie.Float64(), "sum(`win`)")
-  tb.AddExprColumn("ok", serie.Bool(), "true")
+	dt := datatable.New("test")
+	dt.AddColumn("champ", datatable.String, datatable.Values("Malzahar", "Xerath", "Teemo"))
+	dt.AddColumn("champion", datatable.String, datatable.Expr("upper(`champ`)"))
+	dt.AddColumn("win", datatable.Int, datatable.Values(10, 20, 666))
+	dt.AddColumn("loose", datatable.Int, datatable.Values(6, 5, 666))
+	dt.AddColumn("winRate", datatable.Float64, datatable.Expr("`win` * 100 / (`win` + `loose`)"))
+	dt.AddColumn("winRate %", datatable.String, datatable.Expr(" `winRate` ~ \" %\""))
+	dt.AddColumn("sum", datatable.Float64, datatable.Expr("sum(`win`)"))
 
-  fmt.Println(tb)
+	fmt.Println(dt)
 }
 
 /*
-CHAMP <STRING>	CHAMPION <STRING>	WIN <INT>	LOOSE <INT>	WINRATE <STRING>	SUM <FLOAT64>	OK <BOOL> 
-Malzahar      	MALZAHAR         	10       	6          	62.5 %          	696          	true     	
-Xerath        	XERATH           	20       	5          	80 %            	696          	true     	
-Teemo         	TEEMO            	666      	666        	50 %            	696          	true     	
+CHAMP <NULLSTRING>      CHAMPION <NULLSTRING>   WIN <NULLINT>   LOOSE <NULLINT> WINRATE <NULLFLOAT64>   WINRATE % <NULLSTRING>  SUM <NULLFLOAT64> 
+Malzahar                MALZAHAR                10              6               62.5                    62.5 %                  696              
+Xerath                  XERATH                  20              5               80                      80 %                    696              
+Teemo                   TEEMO                   666             666             50                      50 %                    696    
 */
+```
+
+
+### Reading a CSV and aggregate
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	"github.com/datasweet/datatable"
+	"github.com/datasweet/datatable/import/csv"
+)
+
+func main() {
+	dt, err := csv.Import("csv", "phone_data.csv",
+		csv.HasHeader(true),
+		csv.AcceptDate("02/01/06 15:04"),
+		csv.AcceptDate("2006-01"),
+	)
+	if err != nil {
+		log.Fatalf("reading csv: %v", err)
+	}
+
+	dt.Print(os.Stdout, datatable.PrintMaxRows(24))
+
+	dt2, err := dt.Aggregate(datatable.AggregateBy{Type: datatable.Count, Field: "index"})
+	if err != nil {
+		log.Fatalf("aggregate COUNT('index'): %v", err)
+	}
+	fmt.Println(dt2)
+
+	groups, err := dt.GroupBy(datatable.GroupBy{
+		Name: "year",
+		Type: datatable.Int,
+		Keyer: func(row datatable.Row) (interface{}, bool) {
+			if d, ok := row["date"]; ok {
+				if tm, ok := d.(time.Time); ok {
+					return tm.Year(), true
+				}
+			}
+			return nil, false
+		},
+	})
+	if err != nil {
+		log.Fatalf("GROUP BY 'year': %v", err)
+	}
+	dt3, err := groups.Aggregate(
+		datatable.AggregateBy{Type: datatable.Sum, Field: "duration"},
+		datatable.AggregateBy{Type: datatable.CountDistinct, Field: "network"},
+	)
+	if err != nil {
+		log.Fatalf("Aggregate SUM('duration'), COUNT_DISTINCT('network') GROUP BY 'year': %v", err)
+	}
+	fmt.Println(dt3)
+}
 ```
 
 ### Creating a custom serie

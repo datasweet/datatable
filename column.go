@@ -50,25 +50,25 @@ func ColumnHidden(v bool) ColumnOption {
 	}
 }
 
-// ColumnExpr sets the expr for the column
+// Expr sets the expr for the column
 // <!> Incompatible with ColumnValues
-func ColumnExpr(v string) ColumnOption {
+func Expr(v string) ColumnOption {
 	return func(opts *ColumnOptions) {
 		opts.Expr = v
 	}
 }
 
-// ColumnValues fills the column with the values
+// Values fills the column with the values
 // <!> Incompatible with ColumnExpr
-func ColumnValues(v ...interface{}) ColumnOption {
+func Values(v ...interface{}) ColumnOption {
 	return func(opts *ColumnOptions) {
 		opts.Values = v
 	}
 }
 
-// ColumnTimeFormats sets the valid time formats.
+// TimeFormats sets the valid time formats.
 // <!> Only for Time Column
-func ColumnTimeFormats(v ...string) ColumnOption {
+func TimeFormats(v ...string) ColumnOption {
 	return func(opts *ColumnOptions) {
 		opts.TimeFormats = append(opts.TimeFormats, v...)
 	}
