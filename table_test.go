@@ -1,6 +1,7 @@
 package datatable_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/datasweet/datatable"
@@ -25,13 +26,15 @@ func TestNewTable(t *testing.T) {
 	assert.Equal(t, 4, tb.NumCols())
 	assert.Equal(t, 5, tb.NumRows())
 
+	fmt.Println(tb)
+
 	checkTable(t, tb,
 		"sessions", "bounces", "bounceRate", "pageViews",
-		120, 0, 0.0, 1,
-		0, 0, 0.0, 2,
-		0, 0, 0.0, 3,
-		0, 0, 0.0, 4,
-		0, 0, 0.0, 5,
+		120, nil, nil, 1,
+		nil, nil, nil, 2,
+		nil, nil, nil, 3,
+		nil, nil, nil, 4,
+		nil, nil, nil, 5,
 	)
 }
 
@@ -62,26 +65,26 @@ func TestNewRow(t *testing.T) {
 		"champ",
 		"Malzahar",
 		"Xerath",
-		"",
+		nil,
 		"Ahri",
 	)
 
 	tb.AddColumn("win", datatable.Int)
 	checkTable(t, tb,
 		"champ", "win",
-		"Malzahar", 0,
-		"Xerath", 0,
-		"", 0,
-		"Ahri", 0,
+		"Malzahar", nil,
+		"Xerath", nil,
+		nil, nil,
+		"Ahri", nil,
 	)
 
 	tb.AddColumn("loose", datatable.Int, datatable.Values(3, 4, nil))
 	checkTable(t, tb,
 		"champ", "win", "loose",
-		"Malzahar", 0, 3,
-		"Xerath", 0, 4,
-		"", 0, 0,
-		"Ahri", 0, 0,
+		"Malzahar", nil, 3,
+		"Xerath", nil, 4,
+		nil, nil, nil,
+		"Ahri", nil, nil,
 	)
 }
 

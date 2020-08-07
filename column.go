@@ -33,11 +33,10 @@ const (
 
 // ColumnOptions describes options to be apply on a column
 type ColumnOptions struct {
-	Hidden        bool
-	NullAvailable bool
-	Expr          string
-	Values        []interface{}
-	TimeFormats   []string
+	Hidden      bool
+	Expr        string
+	Values      []interface{}
+	TimeFormats []string
 }
 
 // ColumnOption sets column options
@@ -83,54 +82,28 @@ var ctypes map[ColumnType]ColumnSerier
 func init() {
 	ctypes = make(map[ColumnType]ColumnSerier)
 	RegisterColumnType(Bool, func(opts ColumnOptions) serie.Serie {
-		if opts.NullAvailable {
-			return serie.BoolN(opts.Values...)
-		}
-		return serie.Bool(opts.Values...)
+		return serie.BoolN(opts.Values...)
 	})
 	RegisterColumnType(String, func(opts ColumnOptions) serie.Serie {
-		if opts.NullAvailable {
-			return serie.StringN(opts.Values...)
-		}
-		return serie.String(opts.Values...)
+		return serie.StringN(opts.Values...)
 	})
 	RegisterColumnType(Int, func(opts ColumnOptions) serie.Serie {
-		if opts.NullAvailable {
-			return serie.IntN(opts.Values...)
-		}
-		return serie.Int(opts.Values...)
+		return serie.IntN(opts.Values...)
 	})
 	RegisterColumnType(Int32, func(opts ColumnOptions) serie.Serie {
-		if opts.NullAvailable {
-			return serie.Int32N(opts.Values...)
-		}
-		return serie.Int32(opts.Values...)
+		return serie.Int32N(opts.Values...)
 	})
 	RegisterColumnType(Int64, func(opts ColumnOptions) serie.Serie {
-		if opts.NullAvailable {
-			return serie.Int64N(opts.Values...)
-		}
-		return serie.Int64(opts.Values...)
+		return serie.Int64N(opts.Values...)
 	})
 	RegisterColumnType(Float32, func(opts ColumnOptions) serie.Serie {
-		if opts.NullAvailable {
-			return serie.Float32N(opts.Values...)
-		}
-		return serie.Float32(opts.Values...)
+		return serie.Float32N(opts.Values...)
 	})
 	RegisterColumnType(Float64, func(opts ColumnOptions) serie.Serie {
-		if opts.NullAvailable {
-			return serie.Float64N(opts.Values...)
-		}
-		return serie.Float64(opts.Values...)
+		return serie.Float64N(opts.Values...)
 	})
 	RegisterColumnType(Time, func(opts ColumnOptions) serie.Serie {
-		var sr serie.Serie
-		if opts.NullAvailable {
-			sr = serie.TimeN(opts.TimeFormats...)
-		} else {
-			sr = serie.Time(opts.TimeFormats...)
-		}
+		sr := serie.TimeN(opts.TimeFormats...)
 		if len(opts.Values) > 0 {
 			sr.Append(opts.Values...)
 		}

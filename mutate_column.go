@@ -58,9 +58,7 @@ func (t *DataTable) addColumn(col *column) error {
 
 // AddColumn to datatable with a serie of T
 func (t *DataTable) AddColumn(name string, ctyp ColumnType, opt ...ColumnOption) error {
-	options := ColumnOptions{
-		NullAvailable: true,
-	}
+	var options ColumnOptions
 	for _, o := range opt {
 		o(&options)
 	}

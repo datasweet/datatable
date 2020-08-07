@@ -15,7 +15,6 @@ func (h *hasherImpl) Row(row Row, cols []string) uint64 {
 	if row == nil {
 		return 0
 	}
-	hash := xxhash.New()
 	buff := new(bytes.Buffer)
 	enc := gob.NewEncoder(buff)
 
@@ -23,7 +22,7 @@ func (h *hasherImpl) Row(row Row, cols []string) uint64 {
 		enc.Encode(row[name])
 	}
 
-	return hash.Sum64()
+	return xxhash.Sum64(buff.Bytes())
 }
 
 func (h *hasherImpl) Table(dt *DataTable, cols []string) map[uint64][]int {

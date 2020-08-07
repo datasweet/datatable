@@ -1,6 +1,7 @@
 package datatable_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -133,9 +134,11 @@ func TestJoinWithExpr(t *testing.T) {
 	assert.NotNil(t, dt)
 
 	col := dt.Column("upper_ville")
-	assert.Equal(t, "String", col.Type())
+	assert.Equal(t, datatable.String, col.Type())
 	assert.Equal(t, "NullString", col.UnderlyingType().Name())
 	assert.True(t, col.IsComputed())
+
+	fmt.Println(dt)
 
 	checkTable(t, dt,
 		"id", "prenom", "nom", "email", "ville", "upper_ville", "date_achat", "num_facture", "prix_total",
