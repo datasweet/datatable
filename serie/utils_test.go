@@ -11,7 +11,9 @@ import (
 func assertSerieEq(t *testing.T, s serie.Serie, v ...interface{}) {
 	assert.NotNil(t, s)
 	assert.Equal(t, len(v), s.Len())
-	for i, val := range s.All() {
-		assert.Equalf(t, v[i], val, "At index %d", i)
+	index := 0
+	for it := s.Iterator(); it.Next(); {
+		assert.Equalf(t, v[index], it.Current(), "At index %d", index)
+		index++
 	}
 }

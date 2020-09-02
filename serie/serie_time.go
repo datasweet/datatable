@@ -3,23 +3,17 @@ package serie
 import (
 	"time"
 
-	"github.com/spf13/cast"
+	"github.com/datasweet/cast"
 )
 
-func Time(v ...interface{}) Serie {
-	s, _ := New(time.Time{}, cast.ToTime, compareTime)
-	if len(v) > 0 {
-		s.Append(v...)
-	}
-	return s
+// Time to create a time serie
+func Time(format ...string) Serie {
+	return New(time.Time{}, asTime(format), compareTime)
 }
 
-func TimeN(v ...interface{}) Serie {
-	s, _ := New(NullTime{}, asNullTime, compareNullTime)
-	if len(v) > 0 {
-		s.Append(v...)
-	}
-	return s
+// TimeN to create a time serie with nil value
+func TimeN(format ...string) Serie {
+	return New(NullTime{}, asNullTime(format), compareNullTime)
 }
 
 func compareTime(a, b time.Time) int {
@@ -30,6 +24,13 @@ func compareTime(a, b time.Time) int {
 		return Lt
 	}
 	return Gt
+}
+
+func asTime(formats []string) func(interface{}) time.Time {
+	return func(i interface{}) time.Time {
+		t, _ := cast.AsTime(i, formats...)
+		return t
+	}
 }
 
 type NullTime struct {
@@ -44,21 +45,23 @@ func (t NullTime) Interface() interface{} {
 	return nil
 }
 
-func asNullTime(i interface{}) NullTime {
-	var ni NullTime
-	if i == nil {
+func asNullTime(formats []string) func(interface{}) NullTime {
+	return func(i interface{}) NullTime {
+		var ni NullTime
+		if i == nil {
+			return ni
+		}
+
+		if v, ok := i.(NullTime); ok {
+			return v
+		}
+
+		if v, ok := cast.AsTime(i, formats...); ok {
+			ni.Time = v
+			ni.Valid = true
+		}
 		return ni
 	}
-
-	if v, ok := i.(NullTime); ok {
-		return v
-	}
-
-	if v, err := cast.ToTimeE(i); err == nil {
-		ni.Time = v
-		ni.Valid = true
-	}
-	return ni
 }
 
 func compareNullTime(a, b NullTime) int {

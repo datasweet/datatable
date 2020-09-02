@@ -3,7 +3,8 @@ package datatable
 import (
 	"bytes"
 	"encoding/gob"
-	"hash/fnv"
+
+	"github.com/cespare/xxhash"
 )
 
 // Row contains a row relative to columns
@@ -26,25 +27,11 @@ func (r Row) Get(k string) interface{} {
 
 // Hash computes the hash code from this datarow
 // can be used to filter the table (distinct rows)
-func (r Row) Hash() (uint64, bool) {
-	var hash uint64
-
-	// we xor-ing all keys / values to determinate
-	// the same hash of a datarow despite the fact the map has not
-	// been initalized in the same way
-	for k, v := range r {
-		h := fnv.New64()
-		buf := bytes.NewBufferString(k)
-		enc := gob.NewEncoder(buf)
-		if err := enc.Encode(v); err != nil {
-			return 0, false
-		}
-		if _, err := h.Write(buf.Bytes()); err != nil {
-			return 0, false
-		}
-
-		hash ^= h.Sum64()
+func (r Row) Hash() uint64 {
+	buff := new(bytes.Buffer)
+	enc := gob.NewEncoder(buff)
+	for _, v := range r {
+		enc.Encode(v)
 	}
-
-	return hash, true
+	return xxhash.Sum64(buff.Bytes())
 }

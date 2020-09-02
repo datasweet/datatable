@@ -1,11 +1,11 @@
 package serie
 
 import (
-	"github.com/spf13/cast"
+	"github.com/datasweet/cast"
 )
 
 func Int(v ...interface{}) Serie {
-	s, _ := New(0, cast.ToInt, compareInt)
+	s := New(0, asInt, compareInt)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,11 +13,16 @@ func Int(v ...interface{}) Serie {
 }
 
 func IntN(v ...interface{}) Serie {
-	s, _ := New(NullInt{}, asNullInt, compareNullInt)
+	s := New(NullInt{}, asNullInt, compareNullInt)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
 	return s
+}
+
+func asInt(i interface{}) int {
+	n, _ := cast.AsInt(i)
+	return n
 }
 
 func compareInt(a, b int) int {
@@ -52,7 +57,7 @@ func asNullInt(i interface{}) NullInt {
 		return v
 	}
 
-	if v, err := cast.ToIntE(i); err == nil {
+	if v, ok := cast.AsInt(i); ok {
 		ni.Int = v
 		ni.Valid = true
 	}

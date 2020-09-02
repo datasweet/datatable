@@ -1,11 +1,11 @@
 package serie
 
 import (
-	"github.com/spf13/cast"
+	"github.com/datasweet/cast"
 )
 
 func Int64(v ...interface{}) Serie {
-	s, _ := New(int64(0), cast.ToInt64, compareInt64)
+	s := New(int64(0), asInt64, compareInt64)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,11 +13,16 @@ func Int64(v ...interface{}) Serie {
 }
 
 func Int64N(v ...interface{}) Serie {
-	s, _ := New(NullInt64{}, asNullInt64, compareNullInt64)
+	s := New(NullInt64{}, asNullInt64, compareNullInt64)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
 	return s
+}
+
+func asInt64(i interface{}) int64 {
+	n, _ := cast.AsInt64(i)
+	return n
 }
 
 func compareInt64(a, b int64) int {
@@ -52,7 +57,7 @@ func asNullInt64(i interface{}) NullInt64 {
 		return v
 	}
 
-	if v, err := cast.ToInt64E(i); err == nil {
+	if v, ok := cast.AsInt64(i); ok {
 		ni.Int64 = v
 		ni.Valid = true
 	}

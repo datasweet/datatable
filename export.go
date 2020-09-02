@@ -95,7 +95,7 @@ func (t *DataTable) ToSchema() *Schema {
 	for i, col := range t.cols {
 		if col.IsVisible() {
 			cols = append(cols, i)
-			schema.Columns = append(schema.Columns, SchemaColumn{Type: col.Type().Name(), Name: col.Name()})
+			schema.Columns = append(schema.Columns, SchemaColumn{Type: col.UnderlyingType().Name(), Name: col.Name()})
 		}
 	}
 

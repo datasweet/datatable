@@ -10,24 +10,24 @@ import (
 
 func sampleForExport(t *testing.T) *datatable.DataTable {
 	customers := datatable.New("Customers")
-	err := customers.AddIntColumn("id")
+	err := customers.AddColumn("id", datatable.Int)
 	assert.NoError(t, err)
 
-	err = customers.AddStringColumn("prenom")
+	err = customers.AddColumn("prenom", datatable.String)
 	assert.NoError(t, err)
 
-	err = customers.AddStringColumn("nom")
+	err = customers.AddColumn("nom", datatable.String)
 	assert.NoError(t, err)
 	//dc.Hidden(true)
 
-	err = customers.AddStringExprColumn("expr_nom", "`prenom` ~ ' ' ~ UPPER(`nom`)")
+	err = customers.AddColumn("expr_nom", datatable.String, datatable.Expr("`prenom` ~ ' ' ~ UPPER(`nom`)"))
 	assert.NoError(t, err)
 	//dc.Label("nom")
 
-	err = customers.AddStringColumn("email")
+	err = customers.AddColumn("email", datatable.String)
 	assert.NoError(t, err)
 
-	err = customers.AddStringColumn("ville")
+	err = customers.AddColumn("ville", datatable.String)
 	assert.NoError(t, err)
 
 	customers.AppendRow(1, "Aimée", "Marechal", nil, "aime.marechal@example.com", "Paris")

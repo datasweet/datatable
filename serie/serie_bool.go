@@ -1,11 +1,11 @@
 package serie
 
 import (
-	"github.com/spf13/cast"
+	"github.com/datasweet/cast"
 )
 
 func Bool(v ...interface{}) Serie {
-	s, _ := New(false, cast.ToBool, compareBool)
+	s := New(false, asBool, compareBool)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
@@ -13,11 +13,16 @@ func Bool(v ...interface{}) Serie {
 }
 
 func BoolN(v ...interface{}) Serie {
-	s, _ := New(NullBool{}, asNullBool, compareNullBool)
+	s := New(NullBool{}, asNullBool, compareNullBool)
 	if len(v) > 0 {
 		s.Append(v...)
 	}
 	return s
+}
+
+func asBool(i interface{}) bool {
+	b, _ := cast.AsBool(i)
+	return b
 }
 
 func compareBool(a, b bool) int {
@@ -52,7 +57,7 @@ func asNullBool(i interface{}) NullBool {
 		return v
 	}
 
-	if v, err := cast.ToBoolE(i); err == nil {
+	if v, ok := cast.AsBool(i); ok {
 		ni.Bool = v
 		ni.Valid = true
 	}

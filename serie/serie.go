@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-
-	"github.com/pkg/errors"
 )
 
 type Serie interface {
 	Type() reflect.Type
+	Slice() interface{}     // Underlying slice
+	Get(at int) interface{} // T[i]. If T is an interfacer, returns Interfaced value
 	All() []interface{}
-	Get(at int) interface{}
-	Slice() interface{}
+
+	// Iterate
+	Iterator() Iterator
 
 	// Mutate
 	Append(v ...interface{})
@@ -29,9 +30,10 @@ type Serie interface {
 	Head(size int) Serie
 	Tail(size int) Serie
 	Subset(at, size int) Serie
-	Filter(where interface{}) (Serie, error)
 	Distinct() Serie
 	Pick(at ...int) Serie
+	Where(predicate func(interface{}) bool) Serie
+	NonNils() Serie
 
 	// Copy
 	EmptyCopy() Serie
@@ -46,14 +48,18 @@ type Serie interface {
 	// // Print
 	// Print(opts ...PrintOption) string
 	// fmt.Stringer
-}
 
-type serie struct {
-	typ        reflect.Type
-	slice      reflect.Value
-	converter  reflect.Value
-	comparer   reflect.Value
-	interfacer bool
+	// Statistics
+	Avg(opt ...StatOption) float64
+	Count(opt ...StatOption) int64
+	CountDistinct(opt ...StatOption) int64
+	Cusum(opt ...StatOption) []float64
+	Max(opt ...StatOption) float64
+	Min(opt ...StatOption) float64
+	Median(opt ...StatOption) float64
+	Stddev(opt ...StatOption) float64
+	Sum(opt ...StatOption) float64
+	Variance(opt ...StatOption) float64
 }
 
 // Interfacer to convert a value of serie to interface{}
@@ -68,22 +74,30 @@ const (
 	Gt = 1
 )
 
-func New(typ interface{}, converter interface{}, comparer interface{}) (Serie, error) {
+type serie struct {
+	typ        reflect.Type
+	slice      reflect.Value
+	converter  reflect.Value
+	comparer   reflect.Value
+	interfacer bool
+}
+
+func New(typ interface{}, converter interface{}, comparer interface{}) Serie {
 	if typ == nil {
-		return nil, errors.New("not a concrete type")
+		panic("arg 'typ' is not a concrete type")
 	}
 	if converter == nil {
-		return nil, errors.New("nil converter")
+		panic("nil converter")
 	}
 	if comparer == nil {
-		return nil, errors.New("nil comparer")
+		panic("nil comparer")
 	}
 
 	rv := reflect.ValueOf(typ)
 	kind := rv.Kind()
 
 	if kind == reflect.Invalid {
-		return nil, errors.Errorf("type %T is invalid", rv)
+		panic(fmt.Sprintf("type %T is invalid", rv))
 	}
 
 	serie := &serie{}
@@ -104,7 +118,7 @@ func New(typ interface{}, converter interface{}, comparer interface{}) (Serie, e
 		convType.NumOut() != 1 ||
 		convType.In(0).Kind() != reflect.Interface ||
 		convType.Out(0) != serie.typ {
-		return nil, errors.Errorf("wrong converter signature, must be func(i interface{}) %s", serie.typ.Name())
+		panic(fmt.Sprintf("wrong converter signature, must be func(i interface{}) %s", serie.typ.Name()))
 	}
 	serie.converter = convValue
 
@@ -117,7 +131,7 @@ func New(typ interface{}, converter interface{}, comparer interface{}) (Serie, e
 		cmpType.In(0) != serie.typ ||
 		cmpType.In(1) != serie.typ ||
 		cmpType.Out(0).Kind() != reflect.Int {
-		return nil, errors.New("wrong comparer signature, must be func(i, j T) int")
+		panic("wrong comparer signature, must be func(i, j T) int")
 	}
 	serie.comparer = cmpValue
 
@@ -126,7 +140,7 @@ func New(typ interface{}, converter interface{}, comparer interface{}) (Serie, e
 		serie.interfacer = true
 	}
 
-	return serie, nil
+	return serie
 }
 
 // Len returns the len of the serie
@@ -139,23 +153,15 @@ func (s *serie) Type() reflect.Type {
 	return s.typ
 }
 
-// All returns all values in serie
-func (s *serie) All() []interface{} {
-	cnt := s.slice.Len()
-	values := make([]interface{}, 0, cnt)
-	if s.interfacer {
-		for i := 0; i < cnt; i++ {
-			values = append(values, s.slice.Index(i).Interface().(Interfacer).Interface())
-		}
-	} else {
-		for i := 0; i < cnt; i++ {
-			values = append(values, s.slice.Index(i).Interface())
-		}
-	}
-	return values
+// Slice returns the underlying slice
+func (s *serie) Slice() interface{} {
+	return s.slice.Interface()
 }
 
 // Get returns the value at index
+// If the serie is an interfacer, ie, values have custom Interface() func,
+// the Interface() func will be called.
+// So you can have difference between serie.Slice()[at] and serie.Get(at)
 func (s *serie) Get(at int) interface{} {
 	if s.interfacer {
 		return s.slice.Index(at).Interface().(Interfacer).Interface()
@@ -163,8 +169,14 @@ func (s *serie) Get(at int) interface{} {
 	return s.slice.Index(at).Interface()
 }
 
-func (s *serie) Slice() interface{} {
-	return s.slice.Interface()
+// All to get all values
+// <!> Better to use serie.Iterator() if you want to work on values
+func (s *serie) All() []interface{} {
+	all := make([]interface{}, 0, s.Len())
+	for it := s.Iterator(); it.Next(); {
+		all = append(all, it.Current())
+	}
+	return all
 }
 
 func (s *serie) String() string {

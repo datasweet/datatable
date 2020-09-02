@@ -11,11 +11,11 @@ import (
 // Sample from https://sql.sh/cours/union
 func sampleForConcat(t *testing.T) (*datatable.DataTable, *datatable.DataTable, *datatable.DataTable) {
 	a := datatable.New("magasin1")
-	a.AddStringColumn("prenom")
-	a.AddStringColumn("nom")
-	a.AddStringColumn("ville")
-	a.AddTimeColumn("date_naissance")
-	a.AddInt64Column("total_achat")
+	a.AddColumn("prenom", datatable.String)
+	a.AddColumn("nom", datatable.String)
+	a.AddColumn("ville", datatable.String)
+	a.AddColumn("date_naissance", datatable.Time)
+	a.AddColumn("total_achat", datatable.Int64)
 
 	a.AppendRow("Léon", "Dupuis", "Paris", "1983-03-06", 135)
 	a.AppendRow("Marie", "Bernard", "Paris", "1993-07-03", 75)
@@ -23,11 +23,11 @@ func sampleForConcat(t *testing.T) (*datatable.DataTable, *datatable.DataTable, 
 	a.AppendRow("Marcel", "Martin", "Paris", "1976-11-24", 39)
 
 	b := datatable.New("magasin2")
-	b.AddStringColumn("prenom")
-	b.AddStringColumn("nom")
-	b.AddStringColumn("ville")
-	b.AddTimeColumn("date_naissance")
-	b.AddInt64Column("total_achat")
+	b.AddColumn("prenom", datatable.String)
+	b.AddColumn("nom", datatable.String)
+	b.AddColumn("ville", datatable.String)
+	b.AddColumn("date_naissance", datatable.Time)
+	b.AddColumn("total_achat", datatable.Int64)
 
 	b.AppendRow("Marion", "Leroy", "Lyon", "1982-10-27", 285)
 	b.AppendRow("Paul", "Moreau", "Lyon", "1976-04-19", 133)
@@ -35,11 +35,11 @@ func sampleForConcat(t *testing.T) (*datatable.DataTable, *datatable.DataTable, 
 	b.AppendRow("Marcel", "Martin", "Paris", "1976-11-24", 39)
 
 	c := datatable.New("magasin3")
-	c.AddStringColumn("prenom")
-	c.AddStringColumn("nom")
-	c.AddStringColumn("ville")
-	c.AddTimeColumn("date_naissance")
-	c.AddFloat64Column("marge")
+	c.AddColumn("prenom", datatable.String)
+	c.AddColumn("nom", datatable.String)
+	c.AddColumn("ville", datatable.String)
+	c.AddColumn("date_naissance", datatable.Time)
+	c.AddColumn("marge", datatable.Float64)
 
 	c.AppendRow("Marion", "Leroy", "Lyon", "1982-10-27", 5.2)
 	c.AppendRow("Marie", "Bernard", "Paris", "1993-07-03", 0.8)
@@ -91,8 +91,8 @@ func TestGrowColConcat(t *testing.T) {
 
 func TestConcatWithExpr(t *testing.T) {
 	a, b, _ := sampleForConcat(t)
-	a.AddStringExprColumn("upper_ville", "UPPER(ville)")
-	b.AddStringExprColumn("upper_ville", "UPPER(ville)")
+	a.AddColumn("upper_ville", datatable.String, datatable.Expr("UPPER(ville)"))
+	b.AddColumn("upper_ville", datatable.String, datatable.Expr("UPPER(ville)"))
 
 	dt, err := a.Concat(b)
 	assert.NoError(t, err)

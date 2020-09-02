@@ -6,8 +6,8 @@ import (
 	"github.com/datasweet/datatable/serie"
 )
 
-// By defines a sort to be applied
-type By struct {
+// SortBy defines a sort to be applied
+type SortBy struct {
 	Column string
 	Desc   bool
 	index  int
@@ -16,7 +16,7 @@ type By struct {
 // credits : https://stackoverflow.com/questions/36122668/how-to-sort-struct-with-multiple-sort-parameters
 type sorter struct {
 	t  *DataTable
-	by []By
+	by []SortBy
 }
 
 func (s *sorter) Len() int {
@@ -44,7 +44,7 @@ func (s *sorter) Less(i, j int) bool {
 }
 
 // Sort the table
-func (t *DataTable) Sort(by ...By) *DataTable {
+func (t *DataTable) Sort(by ...SortBy) *DataTable {
 	cpy := t.Copy()
 
 	if len(by) == 0 {
