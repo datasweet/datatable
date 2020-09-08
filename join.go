@@ -129,7 +129,7 @@ type joinClause struct {
 
 func (jc *joinClause) copyColumnsTo(out *DataTable) error {
 	if out == nil {
-		return errors.New("nil output datatable")
+		return ErrNilOutputDatatable
 	}
 
 	mon := make(map[string]bool, len(jc.on))
@@ -205,7 +205,7 @@ func (j *joinImpl) Compute() (*DataTable, error) {
 	}
 
 	if out == nil {
-		return nil, errors.New("no output")
+		return nil, ErrNoOutput
 	}
 
 	return out, nil
@@ -213,19 +213,21 @@ func (j *joinImpl) Compute() (*DataTable, error) {
 
 func (j *joinImpl) checkInput() error {
 	if len(j.tables) < 2 {
-		return errors.New("we need at least 2 datatables to compute a join")
+		return ErrNotEnoughDatatables
 	}
 	for i, t := range j.tables {
 		if t == nil || len(t.Name()) == 0 || t.NumCols() == 0 {
-			return errors.Errorf("table #%d is nil", i)
+			err := errors.Errorf("table #%d is nil", i)
+			return errors.Wrap(err, ErrNilTable.Error())
 		}
 	}
 	if len(j.on) == 0 {
-		return errors.New("no on clauses")
+		return ErrNoOnClauses
 	}
 	for i, o := range j.on {
 		if len(o.Field) == 0 {
-			return errors.Errorf("on #%d is nil", i)
+			err := errors.Errorf("on #%d is nil", i)
+			return errors.Wrap(err, ErrOnClauseIsNil.Error())
 		}
 	}
 	return nil
@@ -243,10 +245,12 @@ func (j *joinImpl) initColMapper() {
 
 func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 	if left == nil {
-		return nil, errors.New("left is nil datatable")
+		err := errors.New("left is nil datatable")
+		return nil, errors.Wrap(err, ErrNilDatatable.Error())
 	}
 	if right == nil {
-		return nil, errors.New("right is nil datatable")
+		err := errors.New("right is nil datatable")
+		return nil, errors.Wrap(err, ErrNilDatatable.Error())
 	}
 
 	clauses := [2]*joinClause{
@@ -295,7 +299,8 @@ func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 	case rightJoin:
 		ref, join = clauses[1], clauses[0]
 	default:
-		return nil, errors.Errorf("unknown mode '%v'", j.mode)
+		err := errors.Errorf("unknown mode '%v'", j.mode)
+		return nil, errors.Wrap(err, ErrUnknownMode.Error())
 	}
 
 	join.initHashTable()

@@ -9,27 +9,28 @@ import (
 
 func (t *DataTable) addColumn(col *column) error {
 	if col == nil {
-		return errors.New("nil column")
+		return ErrNilColumn
 	}
 
 	// Check name
 	if len(col.name) == 0 {
-		return errors.New("nil column name")
+		return ErrNilColumnName
 	}
 	if c := t.Column(col.name); c != nil {
-		return errors.Errorf("column '%s' already exists", col.name)
+		err := errors.Errorf("column '%s' already exists", col.name)
+		return errors.Wrap(err, ErrColumnAlreadyExists.Error())
 	}
 
 	// Check typ
 	if len(col.typ) == 0 {
-		return errors.New("nil column type")
+		return ErrNilColumnType
 	}
 
 	// Check formula
 	if len(col.formulae) > 0 {
 		parsed, err := expr.Parse(col.formulae)
 		if err != nil {
-			return errors.Wrapf(err, "formulae syntax")
+			return errors.Wrapf(err, ErrFormulaeSyntax.Error())
 		}
 		col.expr = parsed
 		t.hasExpr = true
@@ -37,7 +38,7 @@ func (t *DataTable) addColumn(col *column) error {
 
 	// Check serie
 	if col.serie == nil {
-		return errors.New("nil serie")
+		return ErrNilSerie
 	}
 	ln := col.serie.Len()
 
@@ -66,7 +67,7 @@ func (t *DataTable) AddColumn(name string, ctyp ColumnType, opt ...ColumnOption)
 	// create serie based on ctyp
 	sr, err := newColumnSerie(ctyp, options)
 	if err != nil {
-		return errors.Wrap(err, "create serie")
+		return errors.Wrap(err, ErrCreateSerie.Error())
 	}
 
 	return t.addColumn(&column{
@@ -81,16 +82,19 @@ func (t *DataTable) AddColumn(name string, ctyp ColumnType, opt ...ColumnOption)
 func (t *DataTable) RenameColumn(old, name string) error {
 	name = strings.TrimSpace(name)
 	if len(name) == 0 {
-		return errors.New("you must provided a column name")
+		err := errors.New("you must provided a column name")
+		return errors.Wrap(err, ErrNilColumnName.Error())
 	}
 	if c := t.Column(name); c != nil {
-		return errors.Errorf("column '%s' already exists", name)
+		err := errors.Errorf("column '%s' already exists", name)
+		return errors.Wrap(err, ErrColumnAlreadyExists.Error())
 	}
 	if col := t.Column(old); col != nil {
 		col.(*column).name = name
 		return nil
 	}
-	return errors.Errorf("column '%s' does not exist", name)
+	err := errors.Errorf("column '%s' does not exist", name)
+	return errors.Wrap(err, ErrColumnNotFound.Error())
 }
 
 // HideAll to hides all column
@@ -129,11 +133,13 @@ func (t *DataTable) ShowColumn(name string) {
 func (t *DataTable) SwapColumn(a, b string) error {
 	i := t.ColumnIndex(a)
 	if i < 0 {
-		return errors.Errorf("column '%s' not found", a)
+		err := errors.Errorf("column '%s' not found", a)
+		return errors.Wrap(err, ErrColumnNotFound.Error())
 	}
 	j := t.ColumnIndex(b)
 	if j < 0 {
-		return errors.Errorf("column '%s' not found", b)
+		err := errors.Errorf("column '%s' not found", b)
+		return errors.Wrap(err, ErrColumnNotFound.Error())
 	}
 	t.cols[i], t.cols[j] = t.cols[j], t.cols[i]
 	return nil

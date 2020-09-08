@@ -47,7 +47,8 @@ func (t *DataTable) evaluateExpressions() error {
 			la := len(arr)
 
 			if t.nrows != ls || la != ls {
-				return errors.Errorf("evaluate expr : size mismatch %d vs %d", la, ls)
+				err := errors.Errorf("evaluate expr : size mismatch %d vs %d", la, ls)
+				return errors.Wrap(err, ErrEvaluateExprSizeMismatch.Error())
 			}
 
 			for i := 0; i < t.nrows; i++ {

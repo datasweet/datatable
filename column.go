@@ -118,13 +118,14 @@ func init() {
 func RegisterColumnType(name ColumnType, serier ColumnSerier) error {
 	name = ColumnType(strings.TrimSpace(string(name)))
 	if len(name) == 0 {
-		return errors.New("empty name")
+		return ErrEmptyName
 	}
 	if serier == nil {
-		return errors.New("nil factory")
+		return ErrNilFactory
 	}
 	if _, ok := ctypes[name]; ok {
-		return errors.Errorf("type '%s' already exists", name)
+		err := errors.Errorf("type '%s' already exists", name)
+		return errors.Wrap(err, ErrTypeAlreadyExists.Error())
 	}
 	ctypes[name] = serier
 	return nil
@@ -144,7 +145,8 @@ func newColumnSerie(ctyp ColumnType, options ColumnOptions) (serie.Serie, error)
 	if s, ok := ctypes[ctyp]; ok {
 		return s(options), nil
 	}
-	return nil, errors.Errorf("unknown column type '%s'", ctyp)
+	err := errors.Errorf("unknown column type '%s'", ctyp)
+	return nil, errors.Wrap(err, ErrUnknownColumnType.Error())
 }
 
 // Column describes a column in our datatable
