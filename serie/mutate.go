@@ -51,7 +51,8 @@ func (s *serie) Insert(at int, v ...interface{}) (err error) {
 	n := s.Len()
 
 	if at < 0 || ((at > 0 || n > 0) && at >= n) {
-		return errors.Errorf("insert at [%d]: index out of range with length %d", at, n)
+		err := errors.Errorf("insert at [%d]: index out of range with length %d", at, n)
+		return errors.Wrap(err, ErrOutOfRange.Error())
 	}
 
 	values := make([]reflect.Value, 0, len(v))
@@ -82,12 +83,14 @@ func (s *serie) Insert(at int, v ...interface{}) (err error) {
 // Set a value at index
 func (s *serie) Set(at int, v interface{}) error {
 	if at < 0 || at >= s.Len() {
-		return errors.Errorf("set at [%d]: index out of range with length %d", at, s.Len())
+		err := errors.Errorf("set at [%d]: index out of range with length %d", at, s.Len())
+		return errors.Wrap(err, ErrOutOfRange.Error())
 	}
 	values := s.asValue(v)
 
 	if len(values) != 1 {
-		return errors.Errorf("set at [%d]: can't flatten slice with set", at)
+		err := errors.Errorf("set at [%d]: can't flatten slice with set", at)
+		return errors.Wrap(err, ErrCantFlattenSliceWithSet.Error())
 	}
 
 	s.slice.Index(at).Set(values[0])
@@ -98,7 +101,8 @@ func (s *serie) Set(at int, v interface{}) error {
 func (s *serie) Delete(at int) error {
 	cnt := s.Len()
 	if at < 0 || at >= cnt {
-		return errors.Errorf("delete at [%d]: index out of range with length %d", at, cnt)
+		err := errors.Errorf("delete at [%d]: index out of range with length %d", at, cnt)
+		return errors.Wrap(err, ErrCantFlattenSliceWithSet.Error())
 	}
 	if at < cnt-1 {
 		reflect.Copy(s.slice.Slice(at, cnt), s.slice.Slice(at+1, cnt))
@@ -111,7 +115,8 @@ func (s *serie) Delete(at int) error {
 // Grow will create zero value
 func (s *serie) Grow(size int) error {
 	if size < 0 {
-		return errors.Errorf("grow: size '%d' must be > 0", size)
+		err := errors.Errorf("grow: size '%d' must be > 0", size)
+		return errors.Wrap(err, ErrGrowSizeMustBeStriclyPositive.Error())
 	}
 	for i := 0; i < size; i++ {
 		s.slice = reflect.Append(s.slice, reflect.Zero(s.typ))
@@ -122,11 +127,13 @@ func (s *serie) Grow(size int) error {
 // Shrink the serie with size
 func (s *serie) Shrink(size int) error {
 	if size < 0 {
-		return errors.Errorf("shrink: size '%d' must be > 0", size)
+		err := errors.Errorf("shrink: size '%d' must be > 0", size)
+		return errors.Wrap(err, ErrShrinkSizeMustBeStriclyPositive.Error())
 	}
 	cnt := s.Len()
 	if size > cnt {
-		return errors.Errorf("shrink: size '%d' must be < length '%d'", size, cnt)
+		err := errors.Errorf("shrink: size '%d' must be < length '%d'", size, cnt)
+		return errors.Wrap(err, ErrShrinkSizeMustBeLesserThanLen.Error())
 	}
 	s.slice = s.slice.Slice(0, cnt-size)
 	return nil
@@ -141,7 +148,8 @@ func (s *serie) Concat(serie ...Serie) error {
 
 	for i, other := range serie {
 		if other.Type() != s.Type() {
-			return errors.Errorf("concat: serie #%d is not the same type as source", i)
+			err := errors.Errorf("concat: serie #%d is not the same type as source", i)
+			return errors.Wrap(err, ErrConcatTypeMismatch.Error())
 		}
 
 		s.Append(other.Slice())
