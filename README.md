@@ -194,6 +194,14 @@ We are Datasweet, a french startup providing full service (big) data solutions.
 ## Questions ? problems ? suggestions ?
 If you find a bug or want to request a feature, please create a [GitHub Issue](https://github.com/datasweet/datatable/issues/new).
 
+## Contributors
+<table>
+ <tr>
+  <td align="center"><a href="https://github.com/constantoine"><img src="https://avatars0.githubusercontent.com/u/13930958?s=100&v=4" width="100" /><br><sub><b>Cléo Rebert</b></a></td>
+ </tr>
+</table>
+
+
 ## License
 ```
 This software is licensed under the Apache License, version 2 ("ALv2"), quoted below.
