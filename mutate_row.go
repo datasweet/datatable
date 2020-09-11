@@ -33,7 +33,8 @@ func (t *DataTable) Append(row ...Row) {
 // AppendRow creates a new row and append cells to this row
 func (t *DataTable) AppendRow(v ...interface{}) error {
 	if len(v) != len(t.cols) {
-		return errors.Errorf("length mismatch: expected %d elements, values have %d elements", len(t.cols), len(v))
+		err := errors.Errorf("length mismatch: expected %d elements, values have %d elements", len(t.cols), len(v))
+		return errors.Wrap(err, ErrLengthMismatch.Error())
 	}
 
 	for i, col := range t.cols {
@@ -77,12 +78,14 @@ func (t *DataTable) Update(at int, row Row) error {
 		cell, ok := row[col.name]
 		if ok {
 			if err := col.serie.Set(at, cell); err != nil {
-				return errors.Wrapf(err, "col %s", col.name)
+				err := errors.Wrapf(err, "col %s", col.name)
+				return errors.Wrap(err, ErrUpdateRow.Error())
 			}
 			continue
 		}
 		if err := col.serie.Set(at, nil); err != nil {
-			return errors.Wrapf(err, "col %s", col.name)
+			err := errors.Wrapf(err, "col %s", col.name)
+			return errors.Wrap(err, ErrUpdateRow.Error())
 		}
 	}
 

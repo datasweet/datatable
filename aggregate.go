@@ -73,7 +73,7 @@ type AggregateBy struct {
 // GroupBy splits our datatable by group
 func (dt *DataTable) GroupBy(by ...GroupBy) (*Groups, error) {
 	if len(by) == 0 {
-		return nil, errors.New("no groupby")
+		return nil, ErrNoGroupBy
 	}
 
 	var groups []*group
@@ -138,11 +138,11 @@ type group struct {
 // Aggregate our groups
 func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 	if g == nil {
-		return nil, errors.New("no groups")
+		return nil, ErrNoGroups
 	}
 
 	if g.dt == nil {
-		return nil, errors.New("nil datatable")
+		return nil, ErrNilDatatable
 	}
 
 	// check cols
@@ -150,13 +150,14 @@ func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 	for _, agg := range aggs {
 		col := g.dt.Column(agg.Field)
 		if col == nil {
-			return nil, errors.Errorf("column '%s' not found", agg.Field)
+			err := errors.Errorf("column '%s' not found", agg.Field)
+			return nil, errors.Wrap(err, ErrColumnNotFound.Error())
 		}
 		switch agg.Type {
 		case Avg, Count, CountDistinct, Cusum, Max, Min, Median, Stddev, Sum, Variance:
 			series[agg.Field] = col.(*column).serie
 		default:
-			return nil, errors.New("unknown agg")
+			return nil, ErrUnknownAgg
 		}
 	}
 
@@ -169,7 +170,8 @@ func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 			typ = Raw
 		}
 		if err := out.AddColumn(by.Name, typ); err != nil {
-			return nil, errors.Wrapf(err, "can't add column '%s'", by.Name)
+			err = errors.Wrapf(err, "can't add column '%s'", by.Name)
+			return nil, errors.Wrap(err, ErrCantAddColumn.Error())
 		}
 	}
 	for _, agg := range aggs {
@@ -184,7 +186,8 @@ func (g *Groups) Aggregate(aggs ...AggregateBy) (*DataTable, error) {
 		default:
 		}
 		if err := out.AddColumn(name, typ); err != nil {
-			return nil, errors.Wrapf(err, "can't add column '%s'", name)
+			err = errors.Wrapf(err, "can't add column '%s'", name)
+			return nil, errors.Wrap(err, ErrCantAddColumn.Error())
 		}
 	}
 

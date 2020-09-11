@@ -25,7 +25,7 @@ func Import(name, path string, opt ...Option) (*datatable.DataTable, error) {
 	// Open the file
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, errors.Wrap(err, "open file")
+		return nil, errors.Wrap(err, datatable.ErrOpenFile.Error())
 	}
 	defer file.Close()
 
@@ -43,7 +43,7 @@ func Import(name, path string, opt ...Option) (*datatable.DataTable, error) {
 	if options.HasHeaders {
 		rec, err := reader.Read()
 		if err != nil {
-			return nil, errors.Wrap(err, "can't read headers")
+			return nil, errors.Wrap(err, datatable.ErrCantReadHeaders.Error())
 		}
 		if len(options.ColumnNames) == 0 {
 			options.ColumnNames = append(options.ColumnNames, rec...)
@@ -56,14 +56,15 @@ func Import(name, path string, opt ...Option) (*datatable.DataTable, error) {
 		if err != nil {
 			if err == io.EOF {
 				if line == 1 {
-					return nil, errors.New("nil datas")
+					return nil, datatable.ErrNilDatas
 				}
 				break
 			}
 			if options.IgnoreIfReadLineError {
 				continue
 			}
-			return nil, errors.Wrapf(err, "error line %d", line)
+			err := errors.Wrapf(err, "error line %d", line)
+			return nil, errors.Wrap(err, datatable.ErrReadingLine.Error())
 		}
 
 		// Do we have columns names ?
@@ -81,11 +82,13 @@ func Import(name, path string, opt ...Option) (*datatable.DataTable, error) {
 				options.ColumnTypes = detectTypes(rec, options.DateFormats)
 			}
 			if len(options.ColumnNames) != len(options.ColumnTypes) {
-				return nil, errors.Errorf("expected %d types, got %d", len(options.ColumnNames), len(options.ColumnTypes))
+				err := errors.Errorf("expected %d types, got %d", len(options.ColumnNames), len(options.ColumnTypes))
+				return nil, errors.Wrap(err, datatable.ErrWrongNumberOfTypes.Error())
 			}
 			for i := range options.ColumnNames {
 				if err := dt.AddColumn(options.ColumnNames[i], options.ColumnTypes[i], datatable.TimeFormats(options.DateFormats...)); err != nil {
-					return nil, errors.Wrapf(err, "add column '%s' with type '%s'", options.ColumnNames[i], options.ColumnTypes[i])
+					err = errors.Wrapf(err, "add column '%s' with type '%s'", options.ColumnNames[i], options.ColumnTypes[i])
+					return nil, errors.Wrap(err, datatable.ErrAddingColumn.Error())
 				}
 			}
 		}
