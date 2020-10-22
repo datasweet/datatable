@@ -18,7 +18,7 @@ func TestNewTable(t *testing.T) {
 	assert.Error(t, tb.AddColumn("bounces", datatable.Int, datatable.Values(11)))
 	assert.Error(t, tb.AddColumn("    ", datatable.Int, datatable.Values(11)))
 	assert.Error(t, tb.AddColumn("nil", datatable.ColumnType("unknown")))
-
+	assert.NoError(t, tb.AddColumn("hidden", datatable.Int, datatable.Values(34), datatable.ColumnHidden(true)))
 	assert.Equal(t, []string{"sessions", "bounces", "bounceRate"}, tb.Columns())
 	assert.Equal(t, 1, tb.NumRows())
 

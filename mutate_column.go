@@ -74,6 +74,7 @@ func (t *DataTable) AddColumn(name string, ctyp ColumnType, opt ...ColumnOption)
 		name:     strings.TrimSpace(name),
 		typ:      ctyp,
 		serie:    sr,
+		hidden:   options.Hidden,
 		formulae: strings.TrimSpace(options.Expr),
 	})
 }
