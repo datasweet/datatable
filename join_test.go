@@ -17,6 +17,7 @@ func sampleForJoin() (*datatable.DataTable, *datatable.DataTable) {
 	customers.AddColumn("nom", datatable.String)
 	customers.AddColumn("email", datatable.String)
 	customers.AddColumn("ville", datatable.String)
+	// customers.AddColumn("concat", datatable.String, datatable.Expr("CONCAT(`prenom`,`nom`)"))
 	customers.AppendRow(1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris")
 	customers.AppendRow(2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon")
 	customers.AppendRow(3, "Marine", "Prevost", "m.prevost@example.com", "Lille")
@@ -59,17 +60,16 @@ func TestJoinOn(t *testing.T) {
 
 func TestInnerJoin(t *testing.T) {
 	customers, orders := sampleForJoin()
-
+	customers.AddColumn("concat", datatable.String, datatable.Expr("concat(`prenom`, `nom`)"))
 	dt, err := customers.InnerJoin(orders, datatable.On("[Customers].[id]", "[Orders].[user_id]"))
 	assert.NoError(t, err)
 	assert.NotNil(t, dt)
-
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
-		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
-		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+		"id", "prenom", "nom", "email", "ville", "concat", "date_achat", "num_facture", "prix_total",
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "AiméeMarechal", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "AiméeMarechal", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", "EsméeLefort", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", "MarinePrevost", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
 	)
 }
 
@@ -81,12 +81,12 @@ func TestLeftJoin(t *testing.T) {
 	assert.NotNil(t, dt)
 
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
-		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
-		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
-		4, "Luc", "Rolland", "lucrolland@example.com", "Marseille", nil, nil, nil,
+		"id", "prenom", "nom", "email", "ville", "concat", "date_achat", "num_facture", "prix_total",
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "AiméeMarechal", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "AiméeMarechal", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", "EsméeLefort", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", "MarinePrevost", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+		4, "Luc", "Rolland", "lucrolland@example.com", "Marseille", "LucRolland", nil, nil, nil,
 	)
 }
 
@@ -98,12 +98,12 @@ func TestRightJoin(t *testing.T) {
 	assert.NotNil(t, dt)
 
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
-		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
-		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
-		nil, nil, nil, nil, nil, time.Date(2013, time.March, 2, 0, 0, 0, 0, time.UTC), "A00107", 47.58,
+		"id", "prenom", "nom", "email", "ville", "concat", "date_achat", "num_facture", "prix_total",
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "AiméeMarechal", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "AiméeMarechal", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", "EsméeLefort", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", "MarinePrevost", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+		nil, nil, nil, nil, nil, "", time.Date(2013, time.March, 2, 0, 0, 0, 0, time.UTC), "A00107", 47.58,
 	)
 }
 
@@ -115,37 +115,88 @@ func TestOuterJoin(t *testing.T) {
 	assert.NotNil(t, dt)
 
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "date_achat", "num_facture", "prix_total",
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
-		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
-		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
-		4, "Luc", "Rolland", "lucrolland@example.com", "Marseille", nil, nil, nil,
+		"id", "prenom", "nom", "email", "ville", "concat", "date_achat", "num_facture", "prix_total",
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "AiméeMarechal", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "AiméeMarechal", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", "EsméeLefort", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", "MarinePrevost", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+		4, "Luc", "Rolland", "lucrolland@example.com", "Marseille", "LucRolland", nil, nil, nil,
 		nil, nil, nil, nil, nil, time.Date(2013, time.March, 2, 0, 0, 0, 0, time.UTC), "A00107", 47.58,
 	)
 }
 
-func TestJoinWithExpr(t *testing.T) {
+func TestInnerJoinWithExprOnHidden(t *testing.T) {
 	customers, orders := sampleForJoin()
-	customers.AddColumn("upper_ville", datatable.String, datatable.Expr("UPPER(ville)"))
-
-	dt, err := customers.InnerJoin(orders, datatable.On("[Customers].[id]", "[Orders].[user_id]"))
+	// customers.AddColumn("upper_ville", datatable.String, datatable.Expr("UPPER(ville)"))
+	customers.AddColumn("id2", datatable.Int, datatable.Expr("`id`+100"))
+	orders.AddColumn("user_id2", datatable.Int, datatable.Expr("`user_id`+100"))
+	customers.HideColumn("id")
+	dt, err := customers.InnerJoin(orders, datatable.On("[Customers].[id2]", "[Orders].[user_id2]"))
 	assert.NoError(t, err)
 	assert.NotNil(t, dt)
-
-	col := dt.Column("upper_ville")
-	assert.Equal(t, datatable.String, col.Type())
-	assert.Equal(t, "NullString", col.UnderlyingType().Name())
-	assert.True(t, col.IsComputed())
+	// col := dt.Column("upper_ville")
+	// assert.Equal(t, datatable.String, col.Type())
+	// assert.Equal(t, "NullString", col.UnderlyingType().Name())
+	// assert.True(t, col.IsComputed())
 
 	fmt.Println(dt)
 
 	checkTable(t, dt,
-		"id", "prenom", "nom", "email", "ville", "upper_ville", "date_achat", "num_facture", "prix_total",
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "PARIS", time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
-		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", "PARIS", time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
-		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", "LYON", time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
-		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", "LILLE", time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+		"prenom", "nom", "email", "ville", "id2", "user_id", "date_achat", "num_facture", "prix_total",
+		"Aimée", "Marechal", "aime.marechal@example.com", "Paris", 101, 1, time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		"Aimée", "Marechal", "aime.marechal@example.com", "Paris", 101, 1, time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		"Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", 102, 2, time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		"Marine", "Prevost", "m.prevost@example.com", "Lille", 103, 3, time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+	)
+}
+
+func TestLeftJoinWithExpr(t *testing.T) {
+	customers, orders := sampleForJoin()
+	// customers.AddColumn("upper_ville", datatable.String, datatable.Expr("UPPER(ville)"))
+	customers.AddColumn("id2", datatable.Int, datatable.Expr("`id`+100"))
+	orders.AddColumn("user_id2", datatable.Int, datatable.Expr("`user_id`+100-1"))
+	dt, err := customers.LeftJoin(orders, datatable.On("[Customers].[id2]", "[Orders].[user_id2]"))
+	assert.NoError(t, err)
+	assert.NotNil(t, dt)
+	// col := dt.Column("upper_ville")
+	// assert.Equal(t, datatable.String, col.Type())
+	// assert.Equal(t, "NullString", col.UnderlyingType().Name())
+	// assert.True(t, col.IsComputed())
+
+	fmt.Println(dt)
+
+	checkTable(t, dt,
+		"id", "prenom", "nom", "email", "ville", "id2", "user_id", "date_achat", "num_facture", "prix_total",
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", 101, 1, time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", 101, 1, time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", 102, 2, time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", 103, 3, time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+		4, "Luc", "Rolland", "lucrolland@example.com", "Marseille", 104, nil, nil, nil, nil,
+	)
+}
+
+func TestRightJoinWithExpr(t *testing.T) {
+	customers, orders := sampleForJoin()
+	// customers.AddColumn("upper_ville", datatable.String, datatable.Expr("UPPER(ville)"))
+	customers.AddColumn("id2", datatable.Int, datatable.Expr("`id`+100"))
+	orders.AddColumn("user_id2", datatable.Int, datatable.Expr("`user_id`+100"))
+	dt, err := customers.RightJoin(orders, datatable.On("[Customers].[id2]", "[Orders].[user_id2]"))
+	assert.NoError(t, err)
+	assert.NotNil(t, dt)
+	// col := dt.Column("upper_ville")
+	// assert.Equal(t, datatable.String, col.Type())
+	// assert.Equal(t, "NullString", col.UnderlyingType().Name())
+	// assert.True(t, col.IsComputed())
+
+	fmt.Println(dt)
+
+	checkTable(t, dt,
+		"id", "prenom", "nom", "email", "ville", "id2", "user_id", "date_achat", "num_facture", "prix_total",
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", 101, 1, time.Date(2013, time.January, 23, 0, 0, 0, 0, time.UTC), "A00103", 203.14,
+		1, "Aimée", "Marechal", "aime.marechal@example.com", "Paris", 101, 1, time.Date(2013, time.February, 14, 0, 0, 0, 0, time.UTC), "A00104", 124.00,
+		2, "Esmée", "Lefort", "esmee.lefort@example.com", "Lyon", 102, 2, time.Date(2013, time.February, 17, 0, 0, 0, 0, time.UTC), "A00105", 149.45,
+		3, "Marine", "Prevost", "m.prevost@example.com", "Lille", 103, 3, time.Date(2013, time.February, 21, 0, 0, 0, 0, time.UTC), "A00106", 235.35,
+		nil, nil, nil, nil, nil, nil, 5, time.Date(2013, time.March, 2, 0, 0, 0, 0, time.UTC), "A00107", 47.58,
 	)
 }
 
