@@ -59,16 +59,30 @@ func TestToTable(t *testing.T) {
 	assert.NotNil(t, out)
 
 	expected := `[
-	["Client ID", "Nom", "email", "ville"],
-	[1, "Aimée MARECHAL", "aime.marechal@example.com", "Paris"],
-	[2, "Esmée LEFORT", "esmee.lefort@example.com", "Lyon"],
-	[3, "Marine PREVOST", "m.prevost@example.com", "Lille"],
-	[4, "Luc ROLLAND", "lucrolland@example.com", "Marseille"]
-]`
+		["Client ID", "Nom", "email", "ville"],
+		[1, "Aimée MARECHAL", "aime.marechal@example.com", "Paris"],
+		[2, "Esmée LEFORT", "esmee.lefort@example.com", "Lyon"],
+		[3, "Marine PREVOST", "m.prevost@example.com", "Lille"],
+		[4, "Luc ROLLAND", "lucrolland@example.com", "Marseille"]
+	]`
 
 	bytes, err := json.Marshal(out)
 	assert.NoError(t, err)
 	assert.JSONEq(t, expected, string(bytes))
+
+	out2 := dt.ToTable(datatable.ExportHidden(true))
+	assert.NotNil(t, out2)
+
+	expected2 := `[
+		["Client ID", "prenom", "nom", "Nom", "email", "ville"],
+		[1, "Aimée", "Marechal", "Aimée MARECHAL", "aime.marechal@example.com", "Paris"],
+		[2, "Esmée", "Lefort", "Esmée LEFORT", "esmee.lefort@example.com", "Lyon"],
+		[3, "Marine", "Prevost", "Marine PREVOST", "m.prevost@example.com", "Lille"],
+		[4, "Luc", "Rolland", "Luc ROLLAND", "lucrolland@example.com", "Marseille"]
+	]`
+	bytes, err = json.Marshal(out2)
+	assert.NoError(t, err)
+	assert.JSONEq(t, expected2, string(bytes))
 }
 
 func TestToMap(t *testing.T) {
@@ -86,6 +100,20 @@ func TestToMap(t *testing.T) {
 	bytes, err := json.Marshal(out)
 	assert.NoError(t, err)
 	assert.JSONEq(t, expected, string(bytes))
+
+	out2 := dt.ToMap(datatable.ExportHidden(true))
+	assert.NotNil(t, out2)
+
+	expected2 := `[
+	{ "Client ID":1, "prenom": "Aimée", "nom": "Marechal", "Nom":"Aimée MARECHAL", "email":"aime.marechal@example.com", "ville":"Paris" },
+	{ "Client ID":2, "prenom": "Esmée", "nom": "Lefort", "Nom":"Esmée LEFORT", "email":"esmee.lefort@example.com", "ville":"Lyon" },
+	{ "Client ID":3, "prenom": "Marine", "nom": "Prevost", "Nom":"Marine PREVOST", "email":"m.prevost@example.com", "ville":"Lille" },
+	{ "Client ID":4, "prenom": "Luc", "nom": "Rolland", "Nom":"Luc ROLLAND", "email":"lucrolland@example.com", "ville":"Marseille" }
+]`
+
+	bytes, err = json.Marshal(out2)
+	assert.NoError(t, err)
+	assert.JSONEq(t, expected2, string(bytes))
 }
 
 func TestToSchema(t *testing.T) {
@@ -104,4 +132,21 @@ func TestToSchema(t *testing.T) {
 	assert.Equal(t, []interface{}{2, "Esmée LEFORT", "esmee.lefort@example.com", "Lyon"}, schema.Rows[1])
 	assert.Equal(t, []interface{}{3, "Marine PREVOST", "m.prevost@example.com", "Lille"}, schema.Rows[2])
 	assert.Equal(t, []interface{}{4, "Luc ROLLAND", "lucrolland@example.com", "Marseille"}, schema.Rows[3])
+
+	schema2 := dt.ToSchema(datatable.ExportHidden(true))
+	assert.NotNil(t, schema2)
+	assert.Equal(t, "Customers", schema2.Name)
+	assert.Equal(t, []datatable.SchemaColumn{
+		datatable.SchemaColumn{"Client ID", "NullInt"},
+		datatable.SchemaColumn{"prenom", "NullString"},
+		datatable.SchemaColumn{"nom", "NullString"},
+		datatable.SchemaColumn{"Nom", "NullString"},
+		datatable.SchemaColumn{"email", "NullString"},
+		datatable.SchemaColumn{"ville", "NullString"},
+	}, schema2.Columns)
+	assert.Len(t, schema2.Rows, 4)
+	assert.Equal(t, []interface{}{1, "Aimée", "Marechal", "Aimée MARECHAL", "aime.marechal@example.com", "Paris"}, schema2.Rows[0])
+	assert.Equal(t, []interface{}{2, "Esmée", "Lefort", "Esmée LEFORT", "esmee.lefort@example.com", "Lyon"}, schema2.Rows[1])
+	assert.Equal(t, []interface{}{3, "Marine", "Prevost", "Marine PREVOST", "m.prevost@example.com", "Lille"}, schema2.Rows[2])
+	assert.Equal(t, []interface{}{4, "Luc", "Rolland", "Luc ROLLAND", "lucrolland@example.com", "Marseille"}, schema2.Rows[3])
 }

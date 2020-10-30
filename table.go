@@ -115,11 +115,12 @@ func (t *DataTable) Records() [][]string {
 
 // Rows returns the rows in datatable
 // Computes all expressions.
-func (t *DataTable) Rows() []Row {
+func (t *DataTable) Rows(opt ...ExportOption) []Row {
 	if t == nil {
 		return nil
 	}
 
+	opts := newExportOptions(opt...)
 	if err := t.evaluateExpressions(); err != nil {
 		panic(err)
 	}
@@ -127,7 +128,7 @@ func (t *DataTable) Rows() []Row {
 	// visible columns
 	cols := make(map[string]int)
 	for i, col := range t.cols {
-		if col.IsVisible() {
+		if opts.WithHiddenCols || col.IsVisible() {
 			cols[col.Name()] = i
 		}
 	}
@@ -150,11 +151,14 @@ func (t *DataTable) String() string {
 }
 
 // Row gets the row at index
-func (t *DataTable) Row(at int) Row {
+func (t *DataTable) Row(at int, opt ...ExportOption) Row {
+	opts := newExportOptions(opt...)
 	t.evaluateExpressions()
 	r := make(Row, len(t.cols))
 	for _, col := range t.cols {
-		r[col.name] = col.serie.Get(at)
+		if opts.WithHiddenCols || col.IsVisible() {
+			r[col.name] = col.serie.Get(at)
+		}
 	}
 	return r
 }

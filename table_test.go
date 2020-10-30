@@ -125,3 +125,64 @@ func TestAppendRow(t *testing.T) {
 		"Vel'Koz", 7, 5, 58.333333333333336,
 	)
 }
+
+func TestRows(t *testing.T) {
+	tb := datatable.New("test")
+	assert.NoError(t, tb.AddColumn("champ", datatable.String))
+	assert.NoError(t, tb.AddColumn("win", datatable.Int))
+	assert.NoError(t, tb.AddColumn("loose", datatable.Int, datatable.ColumnHidden(true)))
+	assert.NoError(t, tb.AddColumn("winRate", datatable.Float64, datatable.Expr("(`win` * 100 / (`win` + `loose`))")))
+	assert.Error(t, tb.AddColumn("winRate", datatable.String, datatable.Expr("test")))
+
+	assert.NoError(t, tb.AppendRow("Xerath", 25, 15, "expr"))
+	assert.NoError(t, tb.AppendRow("Malzahar", 16, 16, nil))
+	assert.NoError(t, tb.AppendRow("Vel'Koz", 7, 5, 3))
+
+	checkTable(t, tb,
+		"champ", "win", "winRate",
+		"Xerath", 25, 62.5,
+		"Malzahar", 16, 50.0,
+		"Vel'Koz", 7, 58.333333333333336,
+	)
+
+	for _, r := range tb.Rows() {
+		assert.Len(t, r, 3)
+	}
+
+	for _, r := range tb.Rows(datatable.ExportHidden(true)) {
+		assert.Len(t, r, 4)
+	}
+}
+
+func TestRow(t *testing.T) {
+	tb := datatable.New("test")
+	assert.NoError(t, tb.AddColumn("champ", datatable.String))
+	assert.NoError(t, tb.AddColumn("win", datatable.Int))
+	assert.NoError(t, tb.AddColumn("loose", datatable.Int, datatable.ColumnHidden(true)))
+	assert.NoError(t, tb.AddColumn("winRate", datatable.Float64, datatable.Expr("(`win` * 100 / (`win` + `loose`))")))
+	assert.Error(t, tb.AddColumn("winRate", datatable.String, datatable.Expr("test")))
+
+	assert.NoError(t, tb.AppendRow("Xerath", 25, 15, "expr"))
+	assert.NoError(t, tb.AppendRow("Malzahar", 16, 16, nil))
+	assert.NoError(t, tb.AppendRow("Vel'Koz", 7, 5, 3))
+
+	checkTable(t, tb,
+		"champ", "win", "winRate",
+		"Xerath", 25, 62.5,
+		"Malzahar", 16, 50.0,
+		"Vel'Koz", 7, 58.333333333333336,
+	)
+
+	r := tb.Row(0)
+	assert.Len(t, r, 3)
+	assert.Equal(t, r.Get("champ"), "Xerath")
+	assert.Equal(t, r.Get("win"), 25)
+	assert.Equal(t, r.Get("winRate"), 62.5)
+	assert.Nil(t, r.Get("loose"))
+	r = tb.Row(0, datatable.ExportHidden(true))
+	assert.Len(t, r, 4)
+	assert.Equal(t, r.Get("champ"), "Xerath")
+	assert.Equal(t, r.Get("win"), 25)
+	assert.Equal(t, r.Get("winRate"), 62.5)
+	assert.Equal(t, r.Get("loose"), 15)
+}

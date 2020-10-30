@@ -1,11 +1,36 @@
 package datatable
 
+// ExportOptions to add options for exporting (like showing hidden columns)
+type ExportOptions struct {
+	WithHiddenCols bool
+}
+
+type ExportOption func(*ExportOptions)
+
+// ExportHidden to show a column when exporting (default false)
+func ExportHidden(v bool) ExportOption {
+	return func(opts *ExportOptions) {
+		opts.WithHiddenCols = v
+	}
+}
+
+// newExportOptions to build the ExportOptions in order to acces the parameters
+func newExportOptions(opt ...ExportOption) ExportOptions {
+	var opts ExportOptions
+	for _, o := range opt {
+		o(&opts)
+	}
+	return opts
+
+}
+
 // ToMap to export the datatable to a json-like struct
-func (t *DataTable) ToMap() []map[string]interface{} {
+func (t *DataTable) ToMap(opt ...ExportOption) []map[string]interface{} {
 	if t == nil {
 		return nil
 	}
 
+	opts := newExportOptions(opt...)
 	if err := t.evaluateExpressions(); err != nil {
 		panic(err)
 	}
@@ -13,7 +38,7 @@ func (t *DataTable) ToMap() []map[string]interface{} {
 	// visible columns
 	cols := make(map[string]int)
 	for i, col := range t.cols {
-		if col.IsVisible() {
+		if opts.WithHiddenCols || col.IsVisible() {
 			cols[col.Name()] = i
 		}
 	}
@@ -30,11 +55,12 @@ func (t *DataTable) ToMap() []map[string]interface{} {
 }
 
 // ToTable to export the datatable to a csv-like struct
-func (t *DataTable) ToTable() [][]interface{} {
+func (t *DataTable) ToTable(opt ...ExportOption) [][]interface{} {
 	if t == nil {
 		return nil
 	}
 
+	opts := newExportOptions(opt...)
 	if err := t.evaluateExpressions(); err != nil {
 		panic(err)
 	}
@@ -45,14 +71,13 @@ func (t *DataTable) ToTable() [][]interface{} {
 	var headers []interface{}
 	var cols []int
 	for i, col := range t.cols {
-		if col.IsVisible() {
+		if opts.WithHiddenCols || col.IsVisible() {
 			cols = append(cols, i)
 			headers = append(headers, col.Name())
 		}
 	}
 
 	rows = append(rows, headers)
-
 	for i := 0; i < t.nrows; i++ {
 		r := make([]interface{}, 0, len(cols))
 		for _, pos := range cols {
@@ -76,11 +101,12 @@ type SchemaColumn struct {
 }
 
 // ToSchema to export the datatable to a schema struct
-func (t *DataTable) ToSchema() *Schema {
+func (t *DataTable) ToSchema(opt ...ExportOption) *Schema {
 	if t == nil {
 		return nil
 	}
 
+	opts := newExportOptions(opt...)
 	if err := t.evaluateExpressions(); err != nil {
 		panic(err)
 	}
@@ -93,7 +119,7 @@ func (t *DataTable) ToSchema() *Schema {
 	// visible columns
 	var cols []int
 	for i, col := range t.cols {
-		if col.IsVisible() {
+		if opts.WithHiddenCols || col.IsVisible() {
 			cols = append(cols, i)
 			schema.Columns = append(schema.Columns, SchemaColumn{Type: col.UnderlyingType().Name(), Name: col.Name()})
 		}

@@ -236,8 +236,8 @@ func (j *joinImpl) checkInput() error {
 func (j *joinImpl) initColMapper() {
 	mcols := make(map[string][]string)
 	for _, t := range j.tables {
-		for _, name := range t.Columns() {
-			mcols[name] = append(mcols[name], t.Name())
+		for _, name := range t.cols {
+			mcols[name.name] = append(mcols[name.name], t.Name())
 		}
 	}
 	j.mcols = mcols
@@ -306,14 +306,14 @@ func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 	join.initHashTable()
 
 	// Copy rows
-	for _, refrow := range ref.table.Rows() {
+	for _, refrow := range ref.table.Rows(ExportHidden(true)) {
 		// Create hash
 		hash := hasher.Row(refrow, ref.on)
 
 		// Have we same hash in jointable ?
 		if indexes, ok := join.hashtable[hash]; ok {
 			for _, idx := range indexes {
-				joinrow := join.table.Row(idx)
+				joinrow := join.table.Row(idx, ExportHidden(true))
 				row := out.NewRow()
 				for _, cm := range ref.cmapper {
 					row[cm[1]] = refrow.Get(cm[0])
@@ -332,6 +332,7 @@ func (j *joinImpl) join(left, right *DataTable) (*DataTable, error) {
 			out.Append(row)
 		}
 	}
+	// out.Print(os.Stdout, PrintColumnType(false))
 
 	// Outer: we must copy rows not consummed in right (join) table
 	if j.mode == outerJoin {
