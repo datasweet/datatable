@@ -1,6 +1,6 @@
 
 # datatable
-[![Circle CI](https://circleci.com/gh/datasweet/datatable.svg?style=svg)](https://circleci.com/gh/datasweet/datatable) [![Go Report Card](https://goreportcard.com/badge/github.com/datasweet/datatable)](https://goreportcard.com/report/github.com/datasweet/datatable) [![GoDoc](https://godoc.org/github.com/datasweet/datatable?status.png)](https://godoc.org/github.com/datasweet/datatable) [![GitHub stars](https://img.shields.io/github/stars/datasweet/datatable.svg)](https://github.com/datasweet/datatable/stargazers)
+[![Go Report Card](https://goreportcard.com/badge/github.com/datasweet/datatable)](https://goreportcard.com/report/github.com/datasweet/datatable) [![GoDoc](https://godoc.org/github.com/datasweet/datatable?status.png)](https://godoc.org/github.com/datasweet/datatable) [![GitHub stars](https://img.shields.io/github/stars/datasweet/datatable.svg)](https://github.com/datasweet/datatable/stargazers)
 [![GitHub license](https://img.shields.io/github/license/datasweet/datatable.svg)](https://github.com/datasweet/datatable/blob/master/LICENSE)
 
 [![datasweet-logo](https://www.datasweet.fr/wp-content/uploads/2019/02/datasweet-black.png)](http://www.datasweet.fr)
